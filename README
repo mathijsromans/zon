@@ -1,0 +1,26 @@
+For building and running zon, you need:
+
+c++ compiler ( e.g. g++ )
+cmake
+allegro ( e.g. liballegro4.2-dev )
+boost ( including boost_signal library, e.g. libboost-dev )
+
+Build steps:
+cmake
+make
+
+Run step:
+./zon
+
+Alternative: building in a separate directory:
+mkdir build
+cd build
+cmake ..
+make
+cd ..
+build/zon
+
+
+
+
+

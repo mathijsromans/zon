@@ -2,7 +2,7 @@
 
 #include "field.h"
 #include "area.h"
-#include "plan.h"
+#include "serialplan.h"
 #include "logger.h"
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
@@ -49,26 +49,26 @@ void Planner::newBuilding(const Coord& pos)
 std::auto_ptr<Plan> Planner::makeBestPlan( const Serf& s)
 {
 //   Logger::getLogger() << "Planner::makeBestPlan" << std::endl;
-  Plan currentPlan( *this, s );
-  std::auto_ptr<Plan> bestPlan;
+  SerialPlan currentPlan( *this, s );
+  std::auto_ptr<SerialPlan> bestPlan;
   findBestContinuation( currentPlan, bestPlan );
   if ( bestPlan->efficiency() > 0 )
   {
     if ( bestPlan->finalize() )
     {
 //       bestPlan->writeToLog();
-      return bestPlan;
+      return std::auto_ptr<Plan>( bestPlan );
     }
   }
   return std::auto_ptr<Plan>();
 }
 
-void Planner::findBestContinuation( Plan& currentPlan, std::auto_ptr<Plan>& bestPlan )
+void Planner::findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<SerialPlan>& bestPlan )
 {
   const unsigned int maxDepth = 2;
   if ( !bestPlan.get() || currentPlan.efficiency() > bestPlan->efficiency() )
   {
-    bestPlan.reset( new Plan(currentPlan) );
+    bestPlan.reset( new SerialPlan(currentPlan) );
   }
   if ( currentPlan.getTasksSize() >= maxDepth )
   {

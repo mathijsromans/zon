@@ -140,11 +140,8 @@ void Serf::chooseJob()
   }
   if ( m_plan.get() )
   {
-    if ( m_jobResult == R_SUCCESS )
-    {
-      m_plan->next();
-    }
-    if ( m_jobResult == R_FAILED || !m_plan->isValid( m_pos ))
+    if ( m_jobResult == R_FAILED ||
+         ( m_jobResult == R_SUCCESS && !m_plan->gotoNextJob() ) )
     {
       m_plan.reset();
     }
@@ -155,7 +152,7 @@ void Serf::chooseJob()
   }
   if (m_plan.get())
   {
-    m_plan->getJobAndDir( m_pos, &m_job, &m_dir );
+    m_plan->getJobAndDir(&m_job, &m_dir );
   }
   else
   {
@@ -171,7 +168,7 @@ void Serf::checkJob()
   {
     return;
   }
-  m_status = JOBCHECKED; // will check now
+  m_status = JOBCHECKING; // being checked now
   m_jobResult = R_SUCCESS; // in principle
   m_pass = 0;
   if (m_job == ACT && m_occupies && m_pos == m_occupies->center() && !m_occupies->hasFreeFloor())
@@ -190,50 +187,57 @@ void Serf::checkJob()
       m_passtot = 50;
     else
       m_passtot = 3;
+    m_status = JOBCHECKED;
     return;
   }
-  Serf *other = s_sf(m_pos.next(m_dir) );
-  m_passtot = field.passingTime( m_pos, m_dir );
-  if ( other && other->m_status == JOBCHOSEN)
-  {
-    m_status = TRYING;
-    other->checkJob();       // find out what other wants first
-    assert(other->m_status == JOBCHECKED);
-    m_status = JOBCHECKED;   // will check now
-  }
-  if ( !field.isPassable(m_pos.next(m_dir)) )
+  Coord nextPos = m_pos.next(m_dir);
+  if ( !field.isPassable(nextPos) )
   {
     m_jobResult = R_FAILED;
     m_job = SLEEP;
     m_passtot = 1;
+    m_status = JOBCHECKED;
     return;
   }
-  if ( s_walkOn.has( m_pos.next(m_dir) ) )
+  if ( s_walkOn.has( nextPos ) )
   {
     m_jobResult = R_DELAYED;
     m_job = SLEEP;
     m_passtot = 1;
+    m_status = JOBCHECKED;
     return;
   }
-  if ( other )
+  m_passtot = field.passingTime( m_pos, m_dir );
+  if ( Serf *other = s_sf(nextPos ) )
   {
-    if ( other->m_status == TRYING ) // other is waiting for me
+    if ( other->m_status == JOBCHECKING ) // other is waiting for me
     {
+      m_status = JOBCHECKED;
       m_passtot = other->maxpasstime();
-      if ( other->m_pos.next(other->m_dir) == m_pos && (field.getItem(m_pos) != ROAD||field.getItem(other->m_pos) != ROAD) )
+      if ( other->m_pos.next(other->m_dir) == m_pos &&
+           ( field.getItem(m_pos) != ROAD ||
+             field.getItem(other->m_pos) != ROAD ) )
       {
         m_passtot *= 2;            //passing costs more time
       }
     }
     else
     {
-      if ( other->m_job != MOVE ||
-           s_walkOn.has( m_pos.next(m_dir) ) ||
-           ( other->m_job == MOVE && other->m_pass >= (other->m_passtot + 1) / 2 ) )
+      if ( other->m_status == JOBCHOSEN )
+      {
+        m_status = JOBCHECKING;
+        other->checkJob();       // find out what other wants first
+        assert(other->m_status == JOBCHECKED);
+        m_status = JOBCHECKED;   // will check now
+      }
+      if ( other->m_job != MOVE ||  // other is not moving
+            s_walkOn.has( nextPos ) ||  // somebody else will walk on nextPos
+            other->m_pass > other->m_passtot / 2 ) // other is arriving on nextPos
       {
         m_jobResult = R_DELAYED;
         m_job = SLEEP;
         m_passtot = 1;
+        m_status = JOBCHECKED;
         return;
       }
       m_passtot = std::max(m_passtot, other->m_passtot-2*other->m_pass);
@@ -241,8 +245,9 @@ void Serf::checkJob()
   }
   if ( m_job == MOVE )
   {
-    s_walkOn.add( m_pos.next(m_dir) );  //will walk there for sure
+    s_walkOn.add( nextPos );  //will walk there for sure
   }
+  m_status = JOBCHECKED;
 }
 
 void Serf::doJob()

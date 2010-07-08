@@ -35,6 +35,7 @@ Task::Task( const Instruction& instruction, Planner& planner, const Area* setTar
 {
 }
 
+// todo: stop using this copy-constructor, since the program should not depend on return value optimization in the compiler
 Task::Task( const Task& t )
   : m_instruction( t.m_instruction ),
     m_planner( t.m_planner ),

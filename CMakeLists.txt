@@ -14,6 +14,7 @@ ADD_DEFINITIONS(-Wall -Wextra -Wshadow -O0 -g)
 
 #list all source files here
 ADD_EXECUTABLE(zon
+src/serialplan.cpp
 src/logger.cpp
 src/instruction.cpp
 src/occarea.cpp

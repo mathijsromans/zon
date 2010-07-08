@@ -3,6 +3,16 @@
 #include <algorithm>
 #include <cassert>
 
+bool Path::done() const
+{
+  return m_index == m_path.size();
+}
+
+void Path::next()
+{
+  ++m_index;
+}
+
 void Path::append(Direction d)
 {
   m_path.push_back(d);
@@ -12,10 +22,17 @@ void Path::append(Direction d)
 
 void Path::append(const Path& newPath)
 {
-  assert(m_finish == newPath.m_start);
-  m_path.insert( m_path.end(), newPath.m_path.begin(), newPath.m_path.end() );
-  m_finish = newPath.m_finish;
-  m_boundingBox = m_boundingBox.unionWith( newPath.m_boundingBox );
+  if ( !newPath.m_valid )
+  {
+    m_valid = false;
+  }
+  else
+  {
+    assert(m_finish == newPath.m_start);
+    m_path.insert( m_path.end(), newPath.m_path.begin(), newPath.m_path.end() );
+    m_finish = newPath.m_finish;
+    m_boundingBox = m_boundingBox.unionWith( newPath.m_boundingBox );
+  }
 }
 
 void Path::reverse()

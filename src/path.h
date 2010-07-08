@@ -13,7 +13,9 @@ class Path
     Path() : m_valid( false ), m_index(0) {}
     Path(const Coord& start) : m_valid(true), m_start(start), m_finish(start), m_boundingBox(start), m_index(0) {}
     Direction getDirection() const { assert(m_index < m_path.size()); return m_path[m_index]; }
-    void next() { ++m_index; }
+    bool empty() const { return m_path.empty(); }
+    bool done() const;
+    void next();
     const Rectangle& getBoundingBox() const { return m_boundingBox; }
     const std::vector<Direction>& getDirs() const { return m_path; }
     Coord getStart() const { return m_start; }
@@ -27,7 +29,7 @@ class Path
     bool m_valid;
     Coord m_start, m_finish;
     Rectangle m_boundingBox;
-    unsigned int m_index; // move to private
+    unsigned int m_index;
 };
 
 #endif

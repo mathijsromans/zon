@@ -9,6 +9,7 @@
 #include <boost/function.hpp>
 #include <boost/signals.hpp>
 class Plan;
+class SerialPlan;
 class Serf;
 
 class Planner
@@ -29,7 +30,7 @@ class Planner
     void unsetTarget( const Coord& c );
     const CoordSet<MAPWIDTH, MAPHEIGHT>& getTargets() const { return m_targets; }
     std::auto_ptr<Plan> makeBestPlan( const Serf& s );
-    void findBestContinuation( Plan& currentPlan, std::auto_ptr< Plan >& bestPlan );
+    void findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<SerialPlan>& bestPlan );
     AreaManager& getAreaManager() { return m_areaManager; }
     boost::signals::connection addTargetChangedCallback( const boost::signal<void (const Coord&, bool)>::slot_type& slot )
     {

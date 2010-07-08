@@ -41,7 +41,7 @@ class Serf
     static const Serf* getSerf(const Coord& c) { return s_sf(c); }
   private:
     static CoordSet<MAPWIDTH, MAPHEIGHT> s_walkOn;
-    enum StatusType { NONEXIST, READY, JOBCHOSEN, TRYING, JOBCHECKED };
+    enum StatusType { NONEXIST, READY, JOBCHOSEN, JOBCHECKING, JOBCHECKED };
     void makePlan();
     int rankplan(Area* a1, Area*al2, const Plan& plan);
     int maxpasstime();

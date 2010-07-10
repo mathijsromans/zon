@@ -214,3 +214,22 @@ bool Area::hasBuilding() const
   }
   return false;
 }
+
+void Area::clearRequest()
+{
+  m_request = boost::none;
+}
+
+void Area::setRequest( const Request& request )
+{
+  m_request = request;
+}
+
+boost::optional<Coord> Area::getRequest( Serf::Type type, Item carry ) const
+{
+  if ( m_request && m_request->type == type && m_request->carry == carry && !m_planner.hasTarget(m_request->pos) )
+  {
+    return m_request->pos;
+  }
+  return boost::none;
+}

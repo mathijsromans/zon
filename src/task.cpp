@@ -106,6 +106,16 @@ bool Task::estimateScore( const Coord& start )
       end = start; // somewhere around here
       success = true;
       break;
+    case Instruction::REQUEST:
+      assert(m_targetArea);
+      if ( boost::optional<Coord> request = m_targetArea->getRequest( m_instruction.serfType, m_instruction.carryBefore ) )
+      {
+        end = *request;
+        m_endIsSet = true;
+        m_steps = start.minDistanceTo( end ) + 1;
+        success = true;
+      }
+      break;
     case Instruction::HOME:
       if ( m_targetArea )
       {
@@ -114,7 +124,7 @@ bool Task::estimateScore( const Coord& start )
         if ( !m_planner.hasTarget( end ) )
         {
           m_score += 100;
-          m_steps = start.minDistanceTo( end );
+          m_steps = start.minDistanceTo( end ) + 1;
           success = true;
         }
       }
@@ -161,6 +171,7 @@ Path Task::finalize( const Coord& start )
       path = field.getPathFinder().findPath(start, m_instruction.targetItems, m_planner.getTargets(), &end);
       m_endIsSet = true;
       break;
+    case Instruction::REQUEST:
     case Instruction::HOME:
     case Instruction::AREA:
     case Instruction::AREAPUT:
@@ -174,6 +185,14 @@ Path Task::finalize( const Coord& start )
   if ( path.isValid() )
   {
     setTarget();
+    if ( m_instruction.serfType == Serf::TEACHER && m_instruction.job == Serf::ACTPREPARE )
+    {
+      Area::Request request;
+      request.type = Serf::SERF;
+      request.carry = VOID;
+      request.pos = m_targetArea->center().next();
+      const_cast<Area*>(m_targetArea)->setRequest( request ); //hmmm
+    }
   }
   return path;
 }

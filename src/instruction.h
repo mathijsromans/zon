@@ -6,7 +6,7 @@
 
 struct Instruction
 {
-  enum TargetType{ ANY, HOME, AREA, AREAPUT, AREATAKE };
+  enum TargetType{ ANY, REQUEST, HOME, AREA, AREAPUT, AREATAKE };
 
   Instruction( Serf::Type setSerfType,
                  TargetType setTargetType,
@@ -22,6 +22,12 @@ struct Instruction
                  Item setCarryAfter,
                  Serf::JobType setJob,
                  std::string setDescription );
+
+  Instruction( Serf::Type setSerfType,
+               Item setCarryBefore,
+               Item setCarryAfter,
+               Serf::JobType setJob,
+               std::string setDescription );
 
   static const std::vector<Instruction>& getInstructions();
   bool iterateOverAreas() const;

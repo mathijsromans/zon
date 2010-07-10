@@ -17,7 +17,7 @@ class BITMAP;
 class Serf
 {
   public:
-    enum Type { SERF, BUILDER, STONEMASON, WOODCUTTER, GRINDER, WOMAN, FARMER, TEACHER, N_TYPES };
+    enum Type { SERF, BUILDER, STONEMASON, WOODCUTTER, GRINDER, WOMAN, FARMER, TEACHER, VOID_TYPE, N_TYPES };
     enum JobType { SLEEP, MOVE, EAT, TAKE, ACT, BUILD_START, BUILDWALL, BUILDFLOOR, BUILDDOOR, BUILDROAD, BUILD_END, ACTPREPARE };
     Serf(Type type, Player& player, const Coord& pos);
     ~Serf();
@@ -60,6 +60,7 @@ class Serf
     enum { R_SUCCESS, R_DELAYED, R_FAILED } m_jobResult;
     static FieldMap<Serf*> s_sf;
     Player& m_player;
+    Type m_becomesType;
 };
 
 #endif

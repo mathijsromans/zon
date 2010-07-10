@@ -7,6 +7,7 @@
 #include <boost/array.hpp>
 #include <boost/utility.hpp>
 #include <boost/signals.hpp>
+#include <boost/optional.hpp>
 
 class Planner;
 
@@ -131,7 +132,18 @@ class Area : public Rectangle, public boost::noncopyable
    * Whether there are building activities in this area
    */
   bool hasBuilding() const;
-  
+
+  struct Request
+  {
+    Serf::Type type;
+    Item carry;
+    Coord pos;
+  };
+
+  void clearRequest();
+  void setRequest( const Request& request );
+  boost::optional<Coord> getRequest( Serf::Type type, Item carry ) const;
+
   protected:
     void setPort( Item item, int value ) { m_port[item - PORT_START - 1] = value; }
 
@@ -143,6 +155,7 @@ class Area : public Rectangle, public boost::noncopyable
     const Serf::Type m_type;
     bool m_active;
     boost::signals::scoped_connection m_con1, m_con2;
+    boost::optional<Request> m_request;
 };
 
 #endif

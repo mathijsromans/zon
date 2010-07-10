@@ -16,7 +16,8 @@ Serf::Serf(Type type, Player& player, const Coord& pos)
   : m_type(type),
     m_pos(pos),
     m_jobResult( R_SUCCESS ),
-    m_player(player)
+    m_player(player),
+    m_becomesType(VOID_TYPE)
 {
   s_sf( m_pos ) = this;
   m_status = READY;
@@ -132,6 +133,11 @@ void Serf::chooseJob()
   {
     return;
   }
+  if ( m_becomesType != VOID_TYPE )
+  {
+    m_type = m_becomesType;
+    m_becomesType = VOID_TYPE;
+  }
   m_status = JOBCHOSEN;
   if (m_job == ACTPREPARE)
   {
@@ -161,7 +167,7 @@ void Serf::chooseJob()
   }
 }
 
-// set m_job, check if job is possible, determine how long it will take
+// determine how long job will take, if it is a move, check if it is possible, otherwise sleep
 void Serf::checkJob()
 {
   if (m_status != JOBCHOSEN)
@@ -169,14 +175,13 @@ void Serf::checkJob()
     return;
   }
   m_status = JOBCHECKING; // being checked now
-  m_jobResult = R_SUCCESS; // in principle
   m_pass = 0;
-  if (m_job == ACT && m_occupies && m_pos == m_occupies->center() && !m_occupies->hasFreeFloor())
+  if ( m_jobResult == R_FAILED )
   {
-    m_jobResult = R_FAILED;
     m_job = MOVE;
     m_dir = randomNum(8);
   }
+  m_jobResult = R_SUCCESS; // in principle
   if (m_job != MOVE)
   {
     if (m_job == SLEEP || m_job == TAKE || m_job == ACT)
@@ -293,40 +298,48 @@ void Serf::executeJob()
       switch (m_type)
       {
         case SERF:
-          if ( field.getItem(m_pos) == CLASSROOMFLOOR )
-          {
-            Serf* teacher = s_sf( m_pos.next(4) );
-            if ( teacher && teacher->m_occupies )
-            {
-              m_type = static_cast<ProduceArea*>(teacher->m_occupies)->shiftProduce();
-            }
-            field.setItem(m_pos, FLOOR);
-            m_job = SLEEP;
-          }
+          // do nothing
         break;
         case WOMAN:
-          if ( !s_sf(m_pos.next() ) )
+          if ( !s_sf( m_pos.next() ) )
           {
             getPlayer().createSerf( SERF, m_pos.next() );
             m_load = VOID;
           }
+          else
+          {
+            m_jobResult = R_FAILED;
+          }
         break;
         case TEACHER:
-          if ( m_load == FLOUR && m_occupies && static_cast<ProduceArea*>(m_occupies)->hasProduce() )
+        {
+          Serf* student = s_sf( m_pos.next() );
+          if ( student &&
+               student->m_type == SERF &&
+               ( student->m_job == ACT || student->m_job == ACTPREPARE ) &&
+               m_load == FLOUR &&
+               m_occupies &&
+               static_cast<ProduceArea*>(m_occupies)->hasProduce() )
           {
             m_load = VOID;
-            field.setItem( m_pos.next(), CLASSROOMFLOOR );
+            student->m_becomesType = static_cast<ProduceArea*>(m_occupies)->shiftProduce();
+            m_occupies->clearRequest();
           }
-          if ( field.getItem(m_pos.next()) == CLASSROOMFLOOR )
+          else
           {
-            m_jobResult = R_DELAYED;
+            m_jobResult = R_FAILED;
           }
+        }
         break;
         case GRINDER:
           if ( m_occupies && m_occupies->hasFreeFloor() )
           {
-            field.setItem(m_pos.next(), FLOUR);
+            field.setItem( m_pos.next(), FLOUR );
             m_load = VOID;
+          }
+          else
+          {
+            m_jobResult = R_FAILED;
           }
         break;
         case FARMER:
@@ -337,8 +350,12 @@ void Serf::executeJob()
           }
           else if ( m_occupies && m_occupies->hasFreeFloor() )
           {
-            field.setItem(m_pos.next(), GRAIN);
+            field.setItem( m_pos.next(), GRAIN );
             m_load = VOID;
+          }
+          else
+          {
+            m_jobResult = R_FAILED;
           }
         break;
         case STONEMASON:
@@ -370,6 +387,10 @@ void Serf::executeJob()
             }
             m_load = VOID;
           }
+          else
+          {
+            m_jobResult = R_FAILED;
+          }
         break;
         case WOODCUTTER:
           if ( !m_load && field.getItem(m_pos) == TREE )
@@ -384,6 +405,10 @@ void Serf::executeJob()
               field.setItem(m_pos.next(i), BOARD);
             }
             m_load = VOID;
+          }
+          else
+          {
+            m_jobResult = R_FAILED;
           }
         break;
         default:

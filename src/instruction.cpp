@@ -18,7 +18,7 @@ Instruction::Instruction( Serf::Type setSerfType,
       job(setJob),
       description(setDescription)
 {
-  assert( targetType != ANY);
+  assert( targetType != ANY && targetType != REQUEST );
 }
 
 Instruction::Instruction( Serf::Type setSerfType,
@@ -30,8 +30,24 @@ Instruction::Instruction( Serf::Type setSerfType,
     : serfType(setSerfType),
       targetType( ANY ),
       carryBefore(setCarryBefore),
-      targetItem( VOID ), // should be undefined
+      targetItem( VOID ), // actually undefined
       targetItems(setTargetItems),
+      carryAfter(setCarryAfter),
+      job(setJob),
+      description(setDescription)
+{
+}
+
+Instruction::Instruction( Serf::Type setSerfType,
+               Item setCarryBefore,
+               Item setCarryAfter,
+               Serf::JobType setJob,
+               std::string setDescription )
+    : serfType(setSerfType),
+      targetType( REQUEST ),
+      carryBefore(setCarryBefore),
+      targetItem( VOID ), // actually undefined
+      targetItems(),
       carryAfter(setCarryAfter),
       job(setJob),
       description(setDescription)
@@ -68,16 +84,15 @@ const std::vector<Instruction>& Instruction::getInstructions()
     instructions.push_back(Instruction(Serf::WOMAN, HOME, FLOUR, FLOOR, VOID, Serf::ACTPREPARE, "Woman bear child"));
     instructions.push_back(Instruction(Serf::TEACHER, AREA, VOID, FLOUR, FLOUR, Serf::TAKE, "Teacher take flour"));
     instructions.push_back(Instruction(Serf::TEACHER, HOME, FLOUR, FLOOR, VOID, Serf::ACTPREPARE, "Teacher teach"));
-    instructions.push_back(Instruction(Serf::SERF, AREA, VOID, CLASSROOMFLOOR, ENDPLAN, Serf::ACTPREPARE, "Serf get education"));
-
-//     instructions.push_back(Plan(Serf::TEACHER, ANY2HOME, FLOUR, Serf::ACTPREPARE, FLOUR, FLOOR, Serf::ACTPREPARE));
+    instructions.push_back(Instruction(Serf::SERF, VOID, ENDPLAN, Serf::ACTPREPARE, "Serf get education" ));
   }
   return instructions;
 }
 
 bool Instruction::iterateOverAreas() const
 {
-  return targetType == AREA ||
+  return targetType == REQUEST ||
+         targetType == AREA ||
          targetType == AREAPUT ||
          targetType == AREATAKE;
 }

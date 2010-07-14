@@ -13,24 +13,18 @@ class Task
     Task( const Instruction& instruction, Planner& planner, const Area* setTargetArea = 0 );
     Task( const Task& t );
     ~Task();
-
-    static boost::ptr_vector<Task> getNextTasks( Planner& planner, Serf::Type serfType, const Area* occupies, Item carry, const Coord& planEnd, const boost::ptr_list<Area>& areas );
-
-    /**
-    * Make an estimate of score of this task
-    * @post must set end if successful
-    * @param from start coordinate
-    * @param occupies area occupied by the serf
-    * @return false if the task is impossible
-    */
-    bool estimateScore( const Coord& start );
     Path finalize( const Coord& start );
     void setTarget();
     void unsetTarget();
     const Instruction& getInstruction() const { return m_instruction; }
-    Coord getEnd() const { return end; }
+    Coord getEnd() const { return m_end; }
     double getScore() const { return m_score; }
     double getSteps() const { return m_steps; }
+    void setScore( double score ) { m_score = score; }
+    void setSteps( unsigned int steps ) { m_steps = steps; }
+    void setGuessedEnd(const Coord& end) { m_end = end; }
+    void setEnd(const Coord& end) { m_endIsSet = true; m_end = end; }
+    const Area* getTargetArea() const { return m_targetArea; }
 
   private:
     const Instruction& m_instruction;
@@ -38,7 +32,7 @@ class Task
     const Area* m_targetArea;
     bool m_endIsSet;
     bool m_targetSet;
-    Coord end;
+    Coord m_end;
     double m_score;
     unsigned int m_steps;
 

@@ -6,7 +6,7 @@ allegro ( e.g. liballegro4.2-dev )
 boost ( including boost_signal library, e.g. libboost-dev )
 
 Build steps:
-cmake
+cmake .
 make
 
 Run step:

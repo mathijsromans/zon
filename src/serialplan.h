@@ -24,18 +24,19 @@ class SerialPlan : public Plan
     double efficiency() const { return m_score / (m_steps + 1); }
     bool finalize();
     unsigned int getTasksSize() const { return m_tasks.size(); }
-    boost::ptr_vector<Task> getNextTasks( const boost::ptr_list<Area>& areas ) const;
+    const Serf& getSerf() const { return m_serf; }
     void popTask();
     void addTask(Task* task);
     void writeToLog() const;
+    Coord getEnd() const;
+    Item carryAfter() const;
 
   private:
 
     Coord getTarget() const { return m_tasks.front().getEnd(); }
     Serf::JobType getJob() const { return m_tasks.front().getInstruction().job; }
 
-    Coord getEnd() const;
-    Item carryAfter() const;
+
     void clearTasks() { m_tasks.clear(); m_score = 0; m_steps = 0; }
 
     Planner& m_planner;

@@ -41,16 +41,22 @@ Item SerialPlan::carryAfter() const
 
 bool SerialPlan::finalize()
 {
-  if ( !m_tasks.empty() )
+  if ( m_tasks.empty() )
   {
-    m_path = m_tasks.front().finalize( m_serf.getPos() );
-    if ( m_path.isValid() )
-    {
-      return true;
-    }
-    m_tasks.clear();
+    return false;
   }
-  return false;
+  for ( boost::ptr_deque<Task>::iterator task = m_tasks.begin(); task != m_tasks.end(); ++task )
+  {
+    task->setTarget();
+  }
+  m_path = m_tasks.front().finalize( m_serf.getPos() );
+  if ( !m_path.isValid() )
+  {
+    m_tasks.clear();
+    return false;
+  }
+  
+  return true;
 }
 
 bool SerialPlan::getNextJobAndDir( Serf::JobType* job, Direction* dir )
@@ -78,17 +84,15 @@ bool SerialPlan::getNextJobAndDir( Serf::JobType* job, Direction* dir )
     // empty path: just do job and go to next tasks
     *job = getJob();
     m_tasks.pop_front();
-    finalize();
+    if ( !m_tasks.empty() )
+    {
+      m_path = m_tasks.front().finalize( m_serf.getPos() );
+    }
     return true;
   }
   // non-empty path: re-evaluate plan after walking
   m_tasks.clear();
   return false;
-}
-
-boost::ptr_vector<Task> SerialPlan::getNextTasks( const boost::ptr_list<Area>& areas ) const
-{
-  return Task::getNextTasks( m_planner, m_serf.getType(), m_serf.getOccupies(), carryAfter(), getEnd(), areas );
 }
 
 void SerialPlan::popTask()

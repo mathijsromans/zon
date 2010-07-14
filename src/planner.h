@@ -4,18 +4,23 @@
 #include "config.h"
 #include "areamanager.h"
 #include "coordset.h"
+#include "instruction.h"
 #include <utility>
 #include <cassert>
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/function.hpp>
 #include <boost/signals.hpp>
+
 class Plan;
 class SerialPlan;
 class Serf;
 
+/// Owns areas, makes new plans and coordinates plans
 class Planner
 {
   public:
     Planner();
+    void createInstructions();
     void itemChanged( const Coord& c );
     /**
      * Make or adjust areas so building can take place
@@ -30,17 +35,17 @@ class Planner
     void unsetTarget( const Coord& c );
     const CoordSet<MAPWIDTH, MAPHEIGHT>& getTargets() const { return m_targets; }
     std::auto_ptr<Plan> makeBestPlan( const Serf& s );
-    void findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<SerialPlan>& bestPlan );
     AreaManager& getAreaManager() { return m_areaManager; }
-    boost::signals::connection addTargetChangedCallback( const boost::signal<void (const Coord&, bool)>::slot_type& slot )
-    {
-      return m_targetChangedSignal.connect( slot );
-    }
+    boost::signals::connection addTargetChangedCallback( const boost::signal<void (const Coord&, bool)>::slot_type& slot );
   private:
+    void findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<SerialPlan>& bestPlan );
+    std::auto_ptr<SerialPlan> findBestPlan( const Serf& s);
     AreaManager m_areaManager;
     CoordSet<MAPWIDTH, MAPHEIGHT> m_targets;
     CoordSet<MAPWIDTH, MAPHEIGHT> m_changeTargets;
     boost::signal<void (const Coord&, bool)> m_targetChangedSignal;
+    boost::ptr_vector<Instruction> m_instructions;
+
 };
 
 #endif

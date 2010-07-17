@@ -448,7 +448,8 @@ void UserInterface::userInput( Zon* theZon )
         }
         if (!m_area)
         {
-          m_area = m_player.getPlanner().getAreaManager().addNewArea( new Area( m_player.getPlanner(), m_mousePos, Serf::SERF) );
+          m_area = new Area( m_player.getPlanner(), m_mousePos, Serf::SERF );
+          m_player.getPlanner().getAreaManager().addNewArea( m_area );
           m_fixCorner = m_area->getTopLeft();
           m_areamode=Area::RESIZE;
         }
@@ -477,16 +478,15 @@ void UserInterface::userInput( Zon* theZon )
         Serf::Type pushed = Serf::Type(((mouse_y-SCREEN_H+140)/PICSZ)*3+(mouse_x-SCREEN_W+m_sidescreenWidth-(m_sidescreenWidth-3*PICSZ)/2)/PICSZ+2);
         if (pushed > Serf::BUILDER && pushed < Serf::N_TYPES)
         {
-          OccArea* area;
           if ( pushed == Serf::TEACHER )
           {
-            area = new ProduceArea( m_player.getPlanner(), m_viewOrigin, pushed );
+            m_area = new ProduceArea( m_player.getPlanner(), m_viewOrigin, pushed );
           }
           else
           {
-            area = new OccArea( m_player.getPlanner(), m_viewOrigin, pushed );
+            m_area = new OccArea( m_player.getPlanner(), m_viewOrigin, pushed );
           }
-          m_area = m_player.getPlanner().getAreaManager().addNewArea( area );
+          m_player.getPlanner().getAreaManager().addNewArea( m_area );
           m_area->resize(3, 3);
           m_fixCorner = m_viewOrigin;
           m_areamode = Area::FLOAT;

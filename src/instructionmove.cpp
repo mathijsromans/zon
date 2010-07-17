@@ -45,7 +45,19 @@ void InstructionMove::estimateScore( Task& task, const Coord& start, const Area&
     Item item =      targetType == AREAPUT ? carryBefore : targetItem;
     int multiplier = targetType == AREAPUT ? +1 : -1;
     int portParam = targetArea.getPort(item);
+    int areaTotal = targetArea.getAvailable(item);
     score += multiplier * 10 * pow(2, abs(portParam)) * sign(portParam);
+    int areaTotalTotal = targetArea.getArea();
+    double oldFr = static_cast<double>(areaTotal) / areaTotalTotal;
+    int total = targetArea.getAreaManager()->getAvailable(item);
+    int totaltotal = targetArea.getAreaManager()->getAvailableTotal();
+    double oldTotalFr = static_cast<double>(total) / totaltotal;
+    if ( std::abs( oldFr - oldTotalFr ) > 0.05 )   // more than 5% off
+    {
+      double newFr = static_cast<double>(areaTotal + multiplier) / areaTotalTotal;
+      double newTotalFr = static_cast<double>(total + multiplier) / totaltotal;
+      score += 0.1 * ( std::abs( oldFr - oldTotalFr ) - std::abs( newFr - newTotalFr) );
+    }
   }
   task.setScore( score );
   task.setSteps( steps );

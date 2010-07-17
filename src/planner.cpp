@@ -54,22 +54,21 @@ void Planner::createInstructions()
 
 void Planner::itemChanged( const Coord& c, Item oldItem, Item newItem )
 {
+  m_areaManager.itemChanged( c, oldItem, newItem );
   m_changeTargets.add(c);
   m_areaManager.removeBuildAreas( c );
-  m_areaManager.itemChanged( c, oldItem, newItem );
 }
 
 void Planner::setTarget( const Coord& c )
 {
-//   Logger::getLogger() << "Planner::setTarget" << std::endl;
   assert(!m_targets.has(c));
   m_changeTargets.remove(c);
+  m_targets.add(c);
   m_areaManager.targetChanged( c, true );
 }
 
 void Planner::unsetTarget( const Coord& c )
 {
-//   Logger::getLogger() << "Planner::unsetTarget" << std::endl;
   m_targets.remove(c);
   m_areaManager.targetChanged( c, false );
 }
@@ -83,8 +82,9 @@ void Planner::newBuilding(const Coord& pos)
       return;
     }
   }
-  Area* area = m_areaManager.addNewArea( new Area( *this, pos, Serf::BUILDER) );
-  m_areaManager.doBuildMerge(area);
+  Area* area = new Area( *this, pos, Serf::BUILDER );
+  m_areaManager.addNewArea( area );
+  m_areaManager.doBuildMerge( area );
 }
 
 std::auto_ptr<Plan> Planner::makeBestPlan( const Serf& s )

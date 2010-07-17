@@ -14,7 +14,7 @@ class Rectangle
     Rectangle(const Rectangle& rect) : m_topLeft(rect.m_topLeft), m_bottomRight(rect.m_bottomRight) {}
     Rectangle(int x1, int y1, int x2, int y2) : m_topLeft(x1, y1), m_bottomRight(x2, y2) {}
     virtual ~Rectangle() {}
-    int area() const { return ( m_bottomRight.x - m_topLeft.x ) * ( m_bottomRight.y - m_topLeft.y ); }
+    int getArea() const { return ( m_bottomRight.x - m_topLeft.x ) * ( m_bottomRight.y - m_topLeft.y ); }
     void add(const Coord& c);
     virtual void resizeTo(const Rectangle& rect);
     Coord center() const { return (m_topLeft + m_bottomRight) / 2; }

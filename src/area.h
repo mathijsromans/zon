@@ -8,6 +8,7 @@
 #include <boost/utility.hpp>
 
 class Planner;
+class AreaManager;
 
 class Area : public Rectangle, public boost::noncopyable
 {
@@ -45,13 +46,6 @@ class Area : public Rectangle, public boost::noncopyable
    * @param fix coordinate to fix
    */
   void resizeTo(Coord c, Coord fix);
-
-  /**
-   * Make new size a valid one
-   * Returns false if there is no change
-   * @param newRect the new size
-   */
-  bool checkNewRect( Rectangle& newRect) const;
 
   /**
    * Set this area to a rectangle
@@ -102,15 +96,7 @@ class Area : public Rectangle, public boost::noncopyable
    */
   virtual void infoClick(const Coord& pix, int PICSZ);
 
-  /**
-   * Count number of available items
-   */
-  void countAvailable();
-
   bool hasAvailable(Item load) const { return m_available[load] != 0; }
-  int getAvailable(Item load) const { return m_available[load]; }
-  void decreaseAvailable(Item load) { --m_available[load]; }
-  void increaseAvailable(Item load) { ++m_available[load]; }
 
   Serf::Type getType() const { return m_type; }
  
@@ -130,15 +116,36 @@ class Area : public Rectangle, public boost::noncopyable
    */
   bool hasBuilding() const;
 
+  /**
+   * Set the area manager; update totals
+   */
+  void setAreaManager( AreaManager* areaManager );
+  const AreaManager* getAreaManager() const { return m_areaManager; }
+  int getAvailable( Item item ) const { return m_available[item]; }
+
   protected:
+
+    /**
+      * Make new size a valid one
+      * Returns false if there is no change
+      * @param newRect the new size
+      */
+    bool checkNewRect( Rectangle& newRect) const;
+
     void setPort( Item item, int value ) { m_port[item - PORT_START - 1] = value; }
 
   private:
+    /**
+    * Count number of available items
+    */
+    void countItems();
+
     const Area& operator=(const Area& rect);
     Planner& m_planner;
     boost::array<int, N_OF_ITEMS> m_available;
     boost::array<int, PORT_END - PORT_START - 1> m_port;
     const Serf::Type m_type;
+    AreaManager* m_areaManager;
 };
 
 #endif

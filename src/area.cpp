@@ -9,21 +9,16 @@
 Area::Area( Planner& planner, const Coord& c, Serf::Type type )
   : Rectangle(c),
     m_planner( planner),
-    m_type(type)
+    m_type(type),
+    m_areaManager(0)
 {
   m_port.assign(0);
-  countAvailable();
+  countItems();
 }
 
 Area::~Area()
 {
-  if ( m_type != Serf::BUILDER )
-  {
-    for (Iterator it = begin(); it != end(); ++it)
-    {
-      m_planner.setChangeTarget( *it );
-    }
-  }
+  resize(0, 0);
 }
 
 void Area::moveTo(Coord c)
@@ -78,14 +73,14 @@ void Area::resizeTo( const Rectangle& newRect )
     }
   }
   Rectangle::resizeTo( checkRect );
-  countAvailable();
+  countItems();
 }
 
 void Area::itemChanged( const Coord& c, Item /*oldItem*/, Item /*newItem*/ )
 {
   if ( contains( c ) )
   {
-    countAvailable(); // todo: create more efficient method
+    countItems(); // todo: create more efficient method
   }
 }
 
@@ -93,12 +88,13 @@ void Area::targetChanged( const Coord& c, bool /*set*/ )
 {
   if ( contains( c ) )
   {
-    countAvailable(); // todo: create more efficient method
+    countItems(); // todo: create more efficient method
   }
 }
 
-void Area::countAvailable()
+void Area::countItems()
 {
+  boost::array<int, N_OF_ITEMS> keep = m_available;
   m_available.assign(0);
   for (Iterator it = begin(); it != end(); ++it)
   {
@@ -106,6 +102,14 @@ void Area::countAvailable()
     {
         m_available[field.getItem(*it)]++;
     }
+  }
+  if ( m_areaManager )
+  {
+    for ( unsigned int i = 0; i < keep.size(); ++i )
+    {
+      keep[i] = m_available[i] - keep[i];
+    }
+    m_areaManager->addToAvailable( keep );
   }
 }
 
@@ -211,3 +215,10 @@ bool Area::hasBuilding() const
   return false;
 }
 
+void Area::setAreaManager( AreaManager* areaManager )
+{
+  assert( !m_areaManager);
+  m_areaManager = areaManager;
+  m_available.assign(0);
+  countItems();
+}

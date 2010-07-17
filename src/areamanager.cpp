@@ -1,8 +1,10 @@
 #include "areamanager.h"
 #include "occarea.h"
 #include "field.h"
+#include <numeric>
 
-AreaManager::AreaManager()
+AreaManager::AreaManager() :
+  m_availableTotal(0)
 {
 }
 
@@ -10,14 +12,14 @@ AreaManager::~AreaManager()
 {
 }
 
-Area* AreaManager::addNewArea(Area* area)
+void AreaManager::addNewArea(Area* area)
 {
   m_allAreas.push_back( area );
+  area->setAreaManager( this );
   if ( OccArea* occArea = dynamic_cast<OccArea*>(area) )
   {
     m_occAreas.push_back( occArea );
   }
-  return area;
 }
 
 void AreaManager::removeArea(Area* area)
@@ -82,7 +84,7 @@ void AreaManager::doBuildMerge(Area* area)
               n++;
             }
           }
-          if ((float) n/rect.area() > 0.75)  //do merge
+          if ((float) n/rect.getArea() > 0.75)  //do merge
           {
             break;
           }
@@ -114,5 +116,13 @@ void AreaManager::targetChanged( const Coord& c, bool set )
   }
 }
 
+void AreaManager::addToAvailable( const boost::array<int, N_OF_ITEMS>& diff )
+{
+  for ( unsigned int i = 0; i < m_available.size(); ++i )
+  {
+    m_available[i] += diff[i];
+  }
+  m_availableTotal = std::accumulate( m_available.begin(), m_available.end(), 0 );
+}
 
 

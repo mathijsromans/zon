@@ -3,6 +3,7 @@
 
 #include "item.h"
 #include <boost/ptr_container/ptr_vector.hpp>
+#include <boost/array.hpp>
 #include <vector>
 
 class Coord;
@@ -19,9 +20,8 @@ class AreaManager : boost::noncopyable
     /**
      * Register area and transfer ownership
      * @param area the area
-     * @return pointer to area
      */
-    Area* addNewArea(Area* area);
+    void addNewArea(Area* area);
 
     /**
      * Delete an area
@@ -47,9 +47,15 @@ class AreaManager : boost::noncopyable
     void itemChanged( const Coord& c, Item oldItem, Item newItem );
     void targetChanged( const Coord& c, bool set );
 
+    void addToAvailable( const boost::array<int, N_OF_ITEMS>& diff );
+    int getAvailable( Item item ) const { return m_available[item]; }
+    int getAvailableTotal() const { return m_availableTotal; }
+
   private:
     boost::ptr_vector<Area> m_allAreas;
     std::vector<OccArea*> m_occAreas;
+    boost::array<int, N_OF_ITEMS> m_available;
+    int m_availableTotal;
 };
 
 #endif

@@ -31,41 +31,24 @@ InstructionMove::InstructionMove( Serf::Type setSerfType,
 {
 }
 
-bool InstructionMove::estimateScore( Task& task, const Coord& start, const Area& targetArea ) const
+void InstructionMove::estimateScore( Task& task, const Coord& start, const Area& targetArea ) const
 {
+  task.setEnd( targetArea.findNearestItem( start, targetItem ) );
   double score = ( carryAfter == VOID || carryAfter == ENDPLAN ) ? 50 : -50;
-  unsigned int steps;
-  bool success = false;
-//     case REQUEST:
-//       assert(targetArea);
-//       if ( boost::optional<Coord> request = targetArea->getRequest( serfType, carryBefore ) )
-//       {
-//         task.setEnd( *request );
-//         steps = start.minDistanceTo( task.getEnd() ) + 1;
-//         success = true;
-//       }
-//       break;
-
-  if (targetArea.canBeUsedBy( serfType ) && targetArea.hasAvailable( targetItem ))
+  unsigned int steps = start.minDistanceTo( task.getEnd() ) + 1;
+  if ( targetType == AREA )
   {
-    task.setEnd( targetArea.findNearestItem( start, targetItem ) );
-    steps = start.minDistanceTo( task.getEnd() ) + 1;
-    if ( targetType == AREA )
-    {
-      score += 10;
-    }
-    else
-    {
-      Item item =      ( targetType == AREAPUT ) ? carryBefore : targetItem;
-      int multiplier = ( targetType == AREAPUT ) ? +1 : -1;
-      int portParam = targetArea.getPort(item);
-      score += multiplier * 10 * pow(2, abs(portParam)) * sign(portParam);
-    }
-    success = true;
+    score += 10;
+  }
+  else
+  {
+    Item item =      targetType == AREAPUT ? carryBefore : targetItem;
+    int multiplier = targetType == AREAPUT ? +1 : -1;
+    int portParam = targetArea.getPort(item);
+    score += multiplier * 10 * pow(2, abs(portParam)) * sign(portParam);
   }
   task.setScore( score );
   task.setSteps( steps );
-  return success;
 }
 
 Path InstructionMove::finalize( Task& task, Planner& /*planner*/, const Coord& start ) const
@@ -79,10 +62,11 @@ boost::ptr_vector<Task> InstructionMove::makeMyTasks( Planner& planner, const Oc
   const boost::ptr_list<Area>& areas = planner.getAreaManager().getAreas();
   for ( boost::ptr_list<Area>::const_iterator areaIt = areas.begin(); areaIt != areas.end(); ++areaIt )
   {
-    std::auto_ptr<Task> task( new Task( *this, planner ) );
-    if ( estimateScore( *task, start, *areaIt ) )
+    if ( areaIt->canBeUsedBy( serfType ) && areaIt->hasAvailable( targetItem ) )
     {
-      tasks.push_back( task.release() );
+      Task* task = new Task( *this, planner );
+      estimateScore( *task, start, *areaIt );
+      tasks.push_back( task );
     }
   }
   return tasks;

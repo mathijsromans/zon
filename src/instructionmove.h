@@ -19,7 +19,7 @@ class InstructionMove : public Instruction
     virtual Path finalize( Task& task, Planner& planner, const Coord& start ) const;
 
   private:
-    bool estimateScore( Task& task, const Coord& start, const Area& targetArea ) const;
+    void estimateScore( Task& task, const Coord& start, const Area& targetArea ) const;
     virtual boost::ptr_vector<Task> makeMyTasks( Planner& planner, const OccArea* occupies, const Coord& start ) const;
     TargetType targetType;
     Item targetItem;

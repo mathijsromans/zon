@@ -37,6 +37,7 @@ class Planner
     std::auto_ptr<Plan> makeBestPlan( const Serf& s );
     AreaManager& getAreaManager() { return m_areaManager; }
     boost::signals::connection addTargetChangedCallback( const boost::signal<void (const Coord&, bool)>::slot_type& slot );
+    void clearNoPlanFound() { m_turnNoSerfPlanFound = 0; }
 
     struct Request
     {
@@ -59,6 +60,8 @@ class Planner
     boost::signal<void (const Coord&, bool)> m_targetChangedSignal;
     boost::ptr_vector<Instruction> m_instructions;
     std::vector<Request> m_requests;
+
+    unsigned int m_turnNoSerfPlanFound;
 
 };
 

@@ -16,8 +16,7 @@ Serf::Serf(Type type, Player& player, const Coord& pos)
   : m_type(type),
     m_pos(pos),
     m_jobResult( R_SUCCESS ),
-    m_player(player),
-    m_becomesType(VOID_TYPE)
+    m_player(player)
 {
   s_sf( m_pos ) = this;
   m_status = READY;
@@ -133,10 +132,10 @@ void Serf::chooseJob()
   {
     return;
   }
-  if ( m_becomesType != VOID_TYPE )
+  if ( m_becomesType )
   {
-    m_type = m_becomesType;
-    m_becomesType = VOID_TYPE;
+    m_type = *m_becomesType;
+    m_becomesType = boost::none;
   }
   m_status = JOBCHOSEN;
   if (m_job == ACTPREPARE)

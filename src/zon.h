@@ -21,8 +21,6 @@ class Zon
     void speedDown();
     void speedUp();
 
-    unsigned int m_turn;
-
   private:
     void initsetvariables();
 

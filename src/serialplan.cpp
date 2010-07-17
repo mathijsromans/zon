@@ -92,6 +92,7 @@ bool SerialPlan::getNextJobAndDir( Serf::JobType* job, Direction* dir )
   }
   // non-empty path: re-evaluate plan after walking
   m_tasks.clear();
+  m_planner.clearNoPlanFound();
   return false;
 }
 

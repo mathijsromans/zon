@@ -17,7 +17,7 @@ Zon zon;
 
 static void timecounter(void) 
 {
-  timer++;
+  ++Global::timer;
 }
 END_OF_FUNCTION(ticker);
 
@@ -91,7 +91,6 @@ void Zon::initsetvariables()
 //     m_seedrand=time(0);
   m_seedrand = 0;
   srand(m_seedrand);
-  m_turn=0;
   m_speed=50;
 
 }
@@ -106,8 +105,8 @@ void Zon::mainLoop()
 {
   while (!key[KEY_ESC])
   {
-    m_tick=0;
-    m_now=timer;
+    m_tick = 0;
+    m_now = Global::timer;
     m_me->chooseJobs();
 
     for (boost::ptr_vector<Player>::iterator pl = m_players.begin(); pl != m_players.end(); ++pl)
@@ -119,16 +118,16 @@ void Zon::mainLoop()
       pl->doJobs();
     }
     m_userInterface->userInput(this);
-    m_userInterface->drawScreen(m_turn, m_tick);
+    m_userInterface->drawScreen(Global::turn, m_tick);
     for (m_tick=0;m_tick<16;m_tick++) 
     {
-      while (timer < m_now+((m_tick+1)*m_speed)/50)
+      while (Global::timer < m_now+((m_tick+1)*m_speed)/50)
       {
         m_userInterface->userInput(this);
-        m_userInterface->drawScreen(m_turn, m_tick);                 //  *  MAIN  *
+        m_userInterface->drawScreen(Global::turn, m_tick);                 //  *  MAIN  *
       }
     }
-    m_turn++;
+    ++Global::turn;
   }
   quit();
 }

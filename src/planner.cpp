@@ -1,6 +1,7 @@
 #include "planner.h"
 
 #include "field.h"
+#include "global.h"
 #include "area.h"
 #include "serialplan.h"
 #include "occarea.h"
@@ -13,7 +14,8 @@
 #include <boost/signal.hpp>
 #include <boost/assign.hpp>
 
-Planner::Planner()
+Planner::Planner() :
+  m_turnNoSerfPlanFound( 0 )
 {
   field.addItemChangedCallback(bind(&Planner::itemChanged, this, _1));
   createInstructions();
@@ -87,11 +89,23 @@ void Planner::newBuilding(const Coord& pos)
 
 std::auto_ptr<Plan> Planner::makeBestPlan( const Serf& s )
 {
+  if ( s.getType() == Serf::SERF &&
+       s.getLoad() == VOID &&
+       m_turnNoSerfPlanFound == Global::turn )
+  {
+    return std::auto_ptr<Plan>();
+  }
   std::auto_ptr<SerialPlan> plan = findBestPlan( s );
   if ( plan->efficiency() > 0 && plan->finalize() )
   {
 //     plan->writeToLog();
     return std::auto_ptr<Plan>( plan );
+  }
+  if ( s.getType() == Serf::SERF &&
+       s.getLoad() == VOID )
+  {
+    m_turnNoSerfPlanFound = Global::turn;
+    Logger::getLogger() << "No best plan in turn " << Global::turn << "\n";
   }
   return std::auto_ptr<Plan>();
 }

@@ -3,6 +3,10 @@
 
 int randomNum(int max);
 
-extern volatile int timer;
+namespace Global
+{
+  extern volatile int timer;
+  extern unsigned int turn;
+}
 
 #endif

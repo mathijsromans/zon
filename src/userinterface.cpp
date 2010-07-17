@@ -264,7 +264,8 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
   {
     m_area->drawInfo(m_sidescreen, PICSZ, m_player.getNumber());
   }
-  printText(m_sidescreen,3,15,1, (std::string("#Serfs:%i") + stringify(m_player.nSerf())).c_str() );
+  printText(m_sidescreen,3,15,1, ( std::string("Serfs:") + stringify(m_player.nSerf())).c_str() );
+  printText(m_sidescreen,3,25,1, ( std::string("Turn:") + stringify(Global::turn)).c_str() );
   OccArea* occArea = dynamic_cast<OccArea*>( m_area );
   for ( int i = Serf::STONEMASON; i < Serf::N_TYPES; i++)
   {
@@ -370,7 +371,7 @@ void UserInterface::setViewPort()
 
 void UserInterface::userInput( Zon* theZon )
 {
-  if (m_keypressedwhen && m_keywaitforrelease && timer > m_keypressedwhen + 10)
+  if (m_keypressedwhen && m_keywaitforrelease && Global::timer > m_keypressedwhen + 10)
   {
     m_keywaitforrelease = false;
     m_keypressedwhen=0;

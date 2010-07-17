@@ -1,7 +1,8 @@
 #ifndef AREAMANAGER_H
 #define AREAMANAGER_H
 
-#include <boost/ptr_container/ptr_list.hpp>
+#include "item.h"
+#include <boost/ptr_container/ptr_vector.hpp>
 #include <vector>
 
 class Coord;
@@ -27,7 +28,7 @@ class AreaManager : boost::noncopyable
      */
     void removeArea(Area* area);
 
-    boost::ptr_list<Area>& getAreas() { return m_allAreas; }
+    boost::ptr_vector<Area>& getAreas() { return m_allAreas; }
 
     std::vector<OccArea*>& getOccAreas() { return m_occAreas; }
 
@@ -43,8 +44,11 @@ class AreaManager : boost::noncopyable
      */
     void doBuildMerge(Area* area);
 
+    void itemChanged( const Coord& c, Item oldItem, Item newItem );
+    void targetChanged( const Coord& c, bool set );
+
   private:
-    boost::ptr_list<Area> m_allAreas;
+    boost::ptr_vector<Area> m_allAreas;
     std::vector<OccArea*> m_occAreas;
 };
 

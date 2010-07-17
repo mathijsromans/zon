@@ -21,7 +21,7 @@ class Planner
   public:
     Planner();
     void createInstructions();
-    void itemChanged( const Coord& c );
+    void itemChanged( const Coord& c, Item oldItem, Item newItem );
     /**
      * Make or adjust areas so building can take place
      * @param pos position
@@ -36,7 +36,6 @@ class Planner
     const CoordSet<MAPWIDTH, MAPHEIGHT>& getTargets() const { return m_targets; }
     std::auto_ptr<Plan> makeBestPlan( const Serf& s );
     AreaManager& getAreaManager() { return m_areaManager; }
-    boost::signals::connection addTargetChangedCallback( const boost::signal<void (const Coord&, bool)>::slot_type& slot );
     void clearNoPlanFound() { m_turnNoSerfPlanFound = 0; }
 
     struct Request
@@ -57,12 +56,11 @@ class Planner
     AreaManager m_areaManager;
     CoordSet<MAPWIDTH, MAPHEIGHT> m_targets;
     CoordSet<MAPWIDTH, MAPHEIGHT> m_changeTargets;
-    boost::signal<void (const Coord&, bool)> m_targetChangedSignal;
     boost::ptr_vector<Instruction> m_instructions;
     std::vector<Request> m_requests;
 
     unsigned int m_turnNoSerfPlanFound;
-
+    boost::signals::scoped_connection m_connection;
 };
 
 #endif

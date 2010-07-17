@@ -59,8 +59,8 @@ Path InstructionMove::finalize( Task& task, Planner& /*planner*/, const Coord& s
 boost::ptr_vector<Task> InstructionMove::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const
 {
   boost::ptr_vector<Task> tasks;
-  const boost::ptr_list<Area>& areas = planner.getAreaManager().getAreas();
-  for ( boost::ptr_list<Area>::const_iterator areaIt = areas.begin(); areaIt != areas.end(); ++areaIt )
+  const boost::ptr_vector<Area>& areas = planner.getAreaManager().getAreas();
+  for ( boost::ptr_vector<Area>::const_iterator areaIt = areas.begin(); areaIt != areas.end(); ++areaIt )
   {
     if ( areaIt->canBeUsedBy( serfType ) && areaIt->hasAvailable( targetItem ) )
     {

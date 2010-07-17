@@ -12,8 +12,6 @@ Area::Area( Planner& planner, const Coord& c, Serf::Type type )
     m_type(type)
 {
   m_port.assign(0);
-  m_con1 = field.addItemChangedCallback( bind(&Area::itemChanged, this, _1) );
-  m_con2 = m_planner.addTargetChangedCallback( bind(&Area::targetChanged, this, _1, _2) );
   countAvailable();
 }
 
@@ -83,7 +81,7 @@ void Area::resizeTo( const Rectangle& newRect )
   countAvailable();
 }
 
-void Area::itemChanged( const Coord& c )
+void Area::itemChanged( const Coord& c, Item /*oldItem*/, Item /*newItem*/ )
 {
   if ( contains( c ) )
   {

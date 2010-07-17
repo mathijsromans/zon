@@ -251,8 +251,8 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
       }
     }
   }
-  const boost::ptr_list<Area>& areas = m_player.getPlanner().getAreaManager().getAreas();
-  for (boost::ptr_list<Area>::const_iterator it = areas.begin(); it != areas.end(); ++it)
+  const boost::ptr_vector<Area>& areas = m_player.getPlanner().getAreaManager().getAreas();
+  for (boost::ptr_vector<Area>::const_iterator it = areas.begin(); it != areas.end(); ++it)
   {
     const Area *a = &*it;
     if ( m_togglemode || a->getType() != Serf::BUILDER )
@@ -435,8 +435,8 @@ void UserInterface::userInput( Zon* theZon )
       else
       {
         m_area=0;
-        boost::ptr_list<Area>& areas = m_player.getPlanner().getAreaManager().getAreas();
-        for (boost::ptr_list<Area>::iterator area = areas.begin(); area != areas.end(); ++area)
+        boost::ptr_vector<Area>& areas = m_player.getPlanner().getAreaManager().getAreas();
+        for (boost::ptr_vector<Area>::iterator area = areas.begin(); area != areas.end(); ++area)
         {
           m_areamode = area->areaClick(m_mousePos);
           if ( m_areamode != Area::NOTHING)

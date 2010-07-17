@@ -17,7 +17,7 @@
 Planner::Planner() :
   m_turnNoSerfPlanFound( 0 )
 {
-  field.addItemChangedCallback(bind(&Planner::itemChanged, this, _1));
+  m_connection = field.addItemChangedCallback(bind(&Planner::itemChanged, this, _1, _2, _3));
   createInstructions();
 }
 
@@ -52,10 +52,11 @@ void Planner::createInstructions()
   m_instructions.push_back(new InstructionAnswerRequest(Serf::SERF, VOID, ENDPLAN, Serf::ACTPREPARE, "Serf get education" ));
 }
 
-void Planner::itemChanged( const Coord& c )
+void Planner::itemChanged( const Coord& c, Item oldItem, Item newItem )
 {
   m_changeTargets.add(c);
-  getAreaManager().removeBuildAreas( c );
+  m_areaManager.removeBuildAreas( c );
+  m_areaManager.itemChanged( c, oldItem, newItem );
 }
 
 void Planner::setTarget( const Coord& c )
@@ -63,20 +64,19 @@ void Planner::setTarget( const Coord& c )
 //   Logger::getLogger() << "Planner::setTarget" << std::endl;
   assert(!m_targets.has(c));
   m_changeTargets.remove(c);
-  m_targets.add(c);
-  m_targetChangedSignal(c, true);
+  m_areaManager.targetChanged( c, true );
 }
 
 void Planner::unsetTarget( const Coord& c )
 {
 //   Logger::getLogger() << "Planner::unsetTarget" << std::endl;
   m_targets.remove(c);
-  m_targetChangedSignal(c, false);
+  m_areaManager.targetChanged( c, false );
 }
 
 void Planner::newBuilding(const Coord& pos)
 {
-  for (boost::ptr_list<Area>::const_iterator it = m_areaManager.getAreas().begin(); it != m_areaManager.getAreas().end(); ++it)
+  for (boost::ptr_vector<Area>::const_iterator it = m_areaManager.getAreas().begin(); it != m_areaManager.getAreas().end(); ++it)
   {
     if ( it->getType() == Serf::BUILDER && it->contains(pos) )
     {
@@ -141,11 +141,6 @@ void Planner::findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<Seria
   }
 }
 
-boost::signals::connection Planner::addTargetChangedCallback( const boost::signal<void (const Coord&, bool)>::slot_type& slot )
-{
-  return m_targetChangedSignal.connect( slot );
-}
-
 void Planner::addRequest( const Request& request )
 {
   if ( std::find( m_requests.begin(), m_requests.end(), request ) == m_requests.end() )
@@ -153,7 +148,6 @@ void Planner::addRequest( const Request& request )
     m_requests.push_back( request );
   }
 }
-
 
 const Planner::Request* Planner::findNearestAvailableRequest( Serf::Type type, Item carry, const Coord& start ) const
 {

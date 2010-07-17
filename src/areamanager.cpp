@@ -22,7 +22,7 @@ Area* AreaManager::addNewArea(Area* area)
 
 void AreaManager::removeArea(Area* area)
 {
-  for (boost::ptr_list<Area>::iterator it = m_allAreas.begin(); it !=  m_allAreas.end(); ++it)
+  for (boost::ptr_vector<Area>::iterator it = m_allAreas.begin(); it !=  m_allAreas.end(); ++it)
   {
     if ( &*it == area )
     {
@@ -39,7 +39,7 @@ void AreaManager::removeArea(Area* area)
 
 void AreaManager::removeBuildAreas(const Coord& c)
 {
-  for (boost::ptr_list<Area>::iterator it = m_allAreas.begin(); it != m_allAreas.end();)
+  for (boost::ptr_vector<Area>::iterator it = m_allAreas.begin(); it != m_allAreas.end();)
   {
     if ( it->getType() == Serf::BUILDER && it->contains(c) && !it->hasBuilding() )
     {
@@ -61,7 +61,7 @@ void AreaManager::doBuildMerge(Area* area)
   Coord bottomRight = area->getBottomRight() + Coord(2, 2);
   Rectangle surrounding(topLeft, bottomRight);
   surrounding = fieldRect.intersection( surrounding );
-  boost::ptr_list<Area>::iterator it;
+  boost::ptr_vector<Area>::iterator it;
   do
   {
     Rectangle rect;
@@ -96,6 +96,22 @@ void AreaManager::doBuildMerge(Area* area)
     }
   }
   while ( it != m_allAreas.end() );
+}
+
+void AreaManager::itemChanged( const Coord& c, Item oldItem, Item newItem )
+{
+  for (boost::ptr_vector<Area>::iterator it = m_allAreas.begin(); it != m_allAreas.end();++it)
+  {
+    it->itemChanged(c, oldItem, newItem);
+  }
+}
+
+void AreaManager::targetChanged( const Coord& c, bool set )
+{
+  for (boost::ptr_vector<Area>::iterator it = m_allAreas.begin(); it != m_allAreas.end(); ++it)
+  {
+    it->targetChanged(c, set);
+  }
 }
 
 

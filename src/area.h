@@ -6,7 +6,6 @@
 #include "serf.h"
 #include <boost/array.hpp>
 #include <boost/utility.hpp>
-#include <boost/signals.hpp>
 
 class Planner;
 
@@ -60,7 +59,7 @@ class Area : public Rectangle, public boost::noncopyable
    */
   virtual void resizeTo(const Rectangle& newRect);
 
-  void itemChanged( const Coord& c );
+  void itemChanged( const Coord& c, Item oldItem, Item newItem );
 
   void targetChanged( const Coord& c, bool set );
 
@@ -140,7 +139,6 @@ class Area : public Rectangle, public boost::noncopyable
     boost::array<int, N_OF_ITEMS> m_available;
     boost::array<int, PORT_END - PORT_START - 1> m_port;
     const Serf::Type m_type;
-    boost::signals::scoped_connection m_con1, m_con2;
 };
 
 #endif

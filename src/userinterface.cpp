@@ -255,20 +255,13 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
   for (boost::ptr_list<Area>::const_iterator it = areas.begin(); it != areas.end(); ++it)
   {
     const Area *a = &*it;
-    if (a != m_area && (m_togglemode || a->getType() != Serf::BUILDER))
+    if ( m_togglemode || a->getType() != Serf::BUILDER )
     {
-      if (a->isActive())
-        a->draw(m_mainscreen, PICSZ, m_viewOrigin, 15);
-      else
-        a->draw(m_mainscreen, PICSZ, m_viewOrigin, 161);
+      a->draw(m_mainscreen, PICSZ, m_viewOrigin, a == m_area );
     }
   }
   if (m_area)
   {
-    if (m_area->isActive())
-      m_area->draw(m_mainscreen, PICSZ, m_viewOrigin, 13);
-    else
-      m_area->draw(m_mainscreen, PICSZ, m_viewOrigin, 12);
     m_area->drawInfo(m_sidescreen, PICSZ, m_player.getNumber());
   }
   printText(m_sidescreen,3,15,1, (std::string("#Serfs:%i") + stringify(m_player.nSerf())).c_str() );
@@ -409,7 +402,6 @@ void UserInterface::userInput( Zon* theZon )
   if ((mouse_b&1) && !m_lmbPressed && m_areamode==Area::FLOAT)
   {
     m_areamode=Area::Area::NOTHING;
-    m_area->makeActive();
     m_lmbPressed = true;
   }
 
@@ -457,7 +449,6 @@ void UserInterface::userInput( Zon* theZon )
         {
           m_area = m_player.getPlanner().getAreaManager().addNewArea( new Area( m_player.getPlanner(), m_mousePos, Serf::SERF) );
           m_fixCorner = m_area->getTopLeft();
-          m_area->makeActive();
           m_areamode=Area::RESIZE;
         }
       }

@@ -1,21 +1,20 @@
-#ifndef INSTRUCTIONFINDITEM_H
-#define INSTRUCTIONFINDITEM_H
+#ifndef INSTRUCTIONANSWERREQUEST_H
+#define INSTRUCTIONANSWERREQUEST_H
 
 #include "instruction.h"
 
-class InstructionFindItem : public Instruction
+class InstructionAnswerRequest : public Instruction
 {
   public:
-    InstructionFindItem( Serf::Type setSerfType,
+    InstructionAnswerRequest( Serf::Type setSerfType,
                  Item setCarryBefore,
-                 const std::vector<Item>& setTargetItems,
                  Item setCarryAfter,
                  Serf::JobType setJob,
                  std::string setDescription );
     virtual Path finalize( Task& task, Planner& planner, const Coord& start ) const;
+
   private:
     virtual boost::ptr_vector<Task> makeMyTasks( Planner& planner, const OccArea* occupies, const Coord& start ) const;
-    std::vector<Item> targetItems;
 };
 
-#endif // INSTRUCTIONFINDITEM_H
+#endif // INSTRUCTIONANSWERREQUEST_H

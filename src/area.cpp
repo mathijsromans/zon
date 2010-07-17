@@ -9,8 +9,7 @@
 Area::Area( Planner& planner, const Coord& c, Serf::Type type )
   : Rectangle(c),
     m_planner( planner),
-    m_type(type),
-    m_active(true)
+    m_type(type)
 {
   m_port.assign(0);
   m_con1 = field.addItemChangedCallback( bind(&Area::itemChanged, this, _1) );
@@ -133,19 +132,18 @@ Coord Area::findNearestItem (const Coord& from, Item load) const
   return result;
 }
 
-void Area::draw(BITMAP* mainscreen, int PICSZ, const Coord& viewOrigin, int color) const
+void Area::draw(BITMAP* mainscreen, int PICSZ, const Coord& viewOrigin, bool isSelected) const
 {
+  int color = isSelected ? ( isActive() ? 13 : 12 ) : ( isActive() ? 15 : 161 );
   Rectangle viewRect = (*this - viewOrigin) * PICSZ;
   UserInterface::drawRect(mainscreen, viewRect.getTopLeft().x, viewRect.getTopLeft().y, viewRect.getBottomRight().x, viewRect.getBottomRight().y, color);
-  if (m_type)
-    UserInterface::drawRect(mainscreen,viewRect.getTopLeft().x + 2, viewRect.getTopLeft().y + 2, viewRect.getBottomRight().x - 2, viewRect.getBottomRight().y - 2,color);
   UserInterface::printText(mainscreen,viewRect.getTopLeft().x, viewRect.getTopLeft().y, color,"##");
   UserInterface::printText(mainscreen,viewRect.getBottomRight().x - PICSZ/2, viewRect.getBottomRight().y - PICSZ/2 ,color, "");  
 }
 
 void Area::drawInfo( BITMAP* sidescreen, int PICSZ, int /*myPlayerNumber*/ ) const
 {
-  UserInterface::drawSprite(sidescreen, 48-PICSZ/2, 25, UserInterface::SpriteItem, LOGO, 3-m_active);
+  UserInterface::drawSprite(sidescreen, 48-PICSZ/2, 25, UserInterface::SpriteItem, LOGO, 3-isActive());
 //   UserInterface::drawSprite(sidescreen,itempic[LOGO][3-m_active],48-PICSZ/2,25);
   for (int i = 0; i < PORT_END - PORT_START - 1; i++)
   {
@@ -215,21 +213,3 @@ bool Area::hasBuilding() const
   return false;
 }
 
-void Area::clearRequest()
-{
-  m_request = boost::none;
-}
-
-void Area::setRequest( const Request& request )
-{
-  m_request = request;
-}
-
-boost::optional<Coord> Area::getRequest( Serf::Type type, Item carry ) const
-{
-  if ( m_request && m_request->type == type && m_request->carry == carry && !m_planner.hasTarget(m_request->pos) )
-  {
-    return m_request->pos;
-  }
-  return boost::none;
-}

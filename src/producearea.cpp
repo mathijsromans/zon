@@ -13,11 +13,6 @@ ProduceArea::~ProduceArea()
 {
 }
 
-bool ProduceArea::hasProduce()
-{
-  return m_produce[0] != Serf::SERF;
-}
-
 Serf::Type ProduceArea::shiftProduce()
 {
   Serf::Type result = m_produce[0];

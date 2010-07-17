@@ -1,7 +1,5 @@
 #include "task.h"
 #include "instruction.h"
-#include "area.h"
-#include "areamanager.h"
 #include "path.h"
 #include "field.h"
 #include "planner.h"
@@ -10,10 +8,9 @@
 #include <cmath>
 #include <boost/interprocess/smart_ptr/unique_ptr.hpp>
 
-Task::Task( const Instruction& instruction, Planner& planner, const Area* setTargetArea )
+Task::Task( const Instruction& instruction, Planner& planner )
   : m_instruction( instruction ),
     m_planner( planner ),
-    m_targetArea( setTargetArea ),
     m_endIsSet( false ),
     m_targetSet( false ),
     m_end(),
@@ -26,7 +23,6 @@ Task::Task( const Instruction& instruction, Planner& planner, const Area* setTar
 Task::Task( const Task& t )
   : m_instruction( t.m_instruction ),
     m_planner( t.m_planner ),
-    m_targetArea( t.m_targetArea ),
     m_endIsSet( t.m_endIsSet ),
     m_targetSet( false ),
     m_end( t.m_end ),

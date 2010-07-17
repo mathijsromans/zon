@@ -186,10 +186,17 @@ void Serf::checkJob()
   {
     if (m_job == SLEEP || m_job == TAKE || m_job == ACT)
       m_passtot = 1;
-    else if (m_type == SERF && m_job == ACTPREPARE)
-      m_passtot = 40;
-    else if (m_job == ACTPREPARE)
-      m_passtot = 50;
+    else if ( m_job == ACTPREPARE )
+    {
+      if ( m_type == SERF )
+        m_passtot = 100;
+      else if ( m_type == WOODCUTTER )
+        m_passtot = 200;
+      else if ( m_type == STONEMASON )
+        m_passtot = 200;
+      else 
+        m_passtot = 50;
+    }
     else
       m_passtot = 3;
     m_status = JOBCHECKED;
@@ -319,11 +326,10 @@ void Serf::executeJob()
                ( student->m_job == ACT || student->m_job == ACTPREPARE ) &&
                m_load == FLOUR &&
                m_occupies &&
-               static_cast<ProduceArea*>(m_occupies)->hasProduce() )
+               m_occupies->isActive() )
           {
             m_load = VOID;
             student->m_becomesType = static_cast<ProduceArea*>(m_occupies)->shiftProduce();
-            m_occupies->clearRequest();
           }
           else
           {

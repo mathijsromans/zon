@@ -8,6 +8,7 @@
 #include "instructionmove.h"
 #include "instructionfinditem.h"
 #include "instructiongohome.h"
+#include "instructionanswerrequest.h"
 #include <boost/bind.hpp>
 #include <boost/signal.hpp>
 #include <boost/assign.hpp>
@@ -46,12 +47,13 @@ void Planner::createInstructions()
   m_instructions.push_back(new InstructionGoHome(Serf::WOMAN, FLOUR, VOID, Serf::ACTPREPARE, "Woman bear child"));
   m_instructions.push_back(new InstructionMove(Serf::TEACHER, InstructionMove::AREA, VOID, FLOUR, FLOUR, Serf::TAKE, "Teacher take flour"));
   m_instructions.push_back(new InstructionGoHome(Serf::TEACHER, FLOUR, VOID, Serf::ACTPREPARE, "Teacher teach"));
-//   m_instructions.push_back(new InstructionMove(Serf::SERF, VOID, ENDPLAN, Serf::ACTPREPARE, "Serf get education" ));
+  m_instructions.push_back(new InstructionAnswerRequest(Serf::SERF, VOID, ENDPLAN, Serf::ACTPREPARE, "Serf get education" ));
 }
 
 void Planner::itemChanged( const Coord& c )
 {
   m_changeTargets.add(c);
+  getAreaManager().removeBuildAreas( c );
 }
 
 void Planner::setTarget( const Coord& c )
@@ -88,7 +90,7 @@ std::auto_ptr<Plan> Planner::makeBestPlan( const Serf& s )
   std::auto_ptr<SerialPlan> plan = findBestPlan( s );
   if ( plan->efficiency() > 0 && plan->finalize() )
   {
-    plan->writeToLog();
+//     plan->writeToLog();
     return std::auto_ptr<Plan>( plan );
   }
   return std::auto_ptr<Plan>();
@@ -115,7 +117,7 @@ void Planner::findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<Seria
   }
   for (boost::ptr_vector<Instruction>::const_iterator instruction = m_instructions.begin(); instruction != m_instructions.end(); ++instruction)
   {
-    boost::ptr_vector<Task> tasks = instruction->makeTasks( *this, currentPlan.getSerf().getType(), currentPlan.getSerf().getOccupies(), currentPlan.carryAfter(), currentPlan.getEnd(), m_areaManager.getAreas() );
+    boost::ptr_vector<Task> tasks = instruction->makeTasks( *this, currentPlan.getSerf().getType(), currentPlan.getSerf().getOccupies(), currentPlan.carryAfter(), currentPlan.getEnd() );
     while ( !tasks.empty() )
     {
       currentPlan.addTask( tasks.pop_back().release() );
@@ -129,3 +131,41 @@ boost::signals::connection Planner::addTargetChangedCallback( const boost::signa
 {
   return m_targetChangedSignal.connect( slot );
 }
+
+void Planner::addRequest( const Request& request )
+{
+  if ( std::find( m_requests.begin(), m_requests.end(), request ) == m_requests.end() )
+  {
+    m_requests.push_back( request );
+  }
+}
+
+
+const Planner::Request* Planner::findNearestAvailableRequest( Serf::Type type, Item carry, const Coord& start ) const
+{
+  const Request* best = 0;
+  unsigned int bestDistance;
+  for ( std::vector<Request>::const_iterator it = m_requests.begin(); it != m_requests.end(); ++it )
+  {
+    if ( it->type == type && it->carry == carry && !hasTarget( it->pos ) )
+    {
+      unsigned int distance = start.minDistanceTo( it->pos );
+      if ( !best || distance < bestDistance )
+      {
+        best = &*it;
+        bestDistance = distance;
+      }
+    }
+  }
+  return best;
+}
+
+void Planner::takeRequest( const Request& request )
+{
+  std::vector<Request>::iterator it = std::find( m_requests.begin(), m_requests.end(), request );
+  if ( it != m_requests.end() )
+  {
+    m_requests.erase( it );
+  }
+}
+

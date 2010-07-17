@@ -7,7 +7,6 @@
 #include <boost/array.hpp>
 #include <boost/utility.hpp>
 #include <boost/signals.hpp>
-#include <boost/optional.hpp>
 
 class Planner;
 
@@ -70,9 +69,9 @@ class Area : public Rectangle, public boost::noncopyable
    * @param mainscreen screen to draw in
    * @param PICSZ picture size
    * @param viewOrigin origin of the screen
-   * @param color color to draw in
+   * @param isSelected is this area selected
    */
-  void draw(BITMAP* mainscreen, int PICSZ, const Coord& viewOrigin, int color) const;
+  virtual void draw(BITMAP* mainscreen, int PICSZ, const Coord& viewOrigin, bool isSelected) const;
 
   /**
    * Draw information about the area
@@ -118,8 +117,7 @@ class Area : public Rectangle, public boost::noncopyable
  
   int getPort( Item item ) const { return m_port[item - PORT_START - 1]; }
 
-  bool isActive() const { return m_active; }
-  void makeActive() { m_active = true; }
+  virtual bool isActive() const { return true; }
 
   /**
    * This area can be used by serf for a plan
@@ -133,17 +131,6 @@ class Area : public Rectangle, public boost::noncopyable
    */
   bool hasBuilding() const;
 
-  struct Request
-  {
-    Serf::Type type;
-    Item carry;
-    Coord pos;
-  };
-
-  void clearRequest();
-  void setRequest( const Request& request );
-  boost::optional<Coord> getRequest( Serf::Type type, Item carry ) const;
-
   protected:
     void setPort( Item item, int value ) { m_port[item - PORT_START - 1] = value; }
 
@@ -153,9 +140,7 @@ class Area : public Rectangle, public boost::noncopyable
     boost::array<int, N_OF_ITEMS> m_available;
     boost::array<int, PORT_END - PORT_START - 1> m_port;
     const Serf::Type m_type;
-    bool m_active;
     boost::signals::scoped_connection m_con1, m_con2;
-    boost::optional<Request> m_request;
 };
 
 #endif

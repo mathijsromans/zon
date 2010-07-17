@@ -31,7 +31,7 @@ InstructionMove::InstructionMove( Serf::Type setSerfType,
 {
 }
 
-bool InstructionMove::estimateScore( Task& task, Planner& planner, const Coord& start, const Area* targetArea ) const
+bool InstructionMove::estimateScore( Task& task, const Coord& start, const Area& targetArea ) const
 {
   double score = ( carryAfter == VOID || carryAfter == ENDPLAN ) ? 50 : -50;
   unsigned int steps;
@@ -46,10 +46,9 @@ bool InstructionMove::estimateScore( Task& task, Planner& planner, const Coord& 
 //       }
 //       break;
 
-  assert(targetArea);
-  if (targetArea->canBeUsedBy( serfType ) && targetArea->hasAvailable( targetItem ))
+  if (targetArea.canBeUsedBy( serfType ) && targetArea.hasAvailable( targetItem ))
   {
-    task.setEnd( targetArea->findNearestItem( start, targetItem ) );
+    task.setEnd( targetArea.findNearestItem( start, targetItem ) );
     steps = start.minDistanceTo( task.getEnd() ) + 1;
     if ( targetType == AREA )
     {
@@ -59,7 +58,7 @@ bool InstructionMove::estimateScore( Task& task, Planner& planner, const Coord& 
     {
       Item item =      ( targetType == AREAPUT ) ? carryBefore : targetItem;
       int multiplier = ( targetType == AREAPUT ) ? +1 : -1;
-      int portParam = targetArea->getPort(item);
+      int portParam = targetArea.getPort(item);
       score += multiplier * 10 * pow(2, abs(portParam)) * sign(portParam);
     }
     success = true;
@@ -69,30 +68,19 @@ bool InstructionMove::estimateScore( Task& task, Planner& planner, const Coord& 
   return success;
 }
 
-Path InstructionMove::finalize( Task& task, Planner& planner, const Coord& start ) const
+Path InstructionMove::finalize( Task& task, Planner& /*planner*/, const Coord& start ) const
 {
-  Path path = field.getPathFinder().findPath( start, task.getEnd() );
-  if ( path.isValid() )
-  {
-    if ( serfType == Serf::TEACHER && job == Serf::ACTPREPARE )
-    {
-      Area::Request request;
-      request.type = Serf::SERF;
-      request.carry = VOID;
-      request.pos = task.getTargetArea()->center().next();
-      const_cast<Area*>(task.getTargetArea())->setRequest( request ); //hmmm
-    }
-  }
-  return path;
+  return field.getPathFinder().findPath( start, task.getEnd() );
 }
 
-boost::ptr_vector<Task> InstructionMove::makeMyTasks( Planner& planner, const Area* occupies, const Coord& planEnd, const boost::ptr_list<Area>& areas ) const
+boost::ptr_vector<Task> InstructionMove::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const
 {
   boost::ptr_vector<Task> tasks;
+  const boost::ptr_list<Area>& areas = planner.getAreaManager().getAreas();
   for ( boost::ptr_list<Area>::const_iterator areaIt = areas.begin(); areaIt != areas.end(); ++areaIt )
   {
-    std::auto_ptr<Task> task( new Task( *this, planner, &*areaIt ) );
-    if ( estimateScore( *task, planner, planEnd, &*areaIt ) )
+    std::auto_ptr<Task> task( new Task( *this, planner ) );
+    if ( estimateScore( *task, start, *areaIt ) )
     {
       tasks.push_back( task.release() );
     }

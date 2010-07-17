@@ -16,14 +16,6 @@ InstructionFindItem::InstructionFindItem( Serf::Type setSerfType,
 {
 }
 
-bool InstructionFindItem::estimateScore( Task& task, const Coord& start ) const
-{
-  task.setScore( ( carryAfter == VOID || carryAfter == ENDPLAN ) ? 50 : -50 );
-  task.setSteps( 20 ); // just assume we can find the target item(s)
-  task.setGuessedEnd( start ); // somewhere around here
-  return true;
-}
-
 Path InstructionFindItem::finalize( Task& task, Planner& planner, const Coord& start ) const
 {
   Coord newEnd;
@@ -36,13 +28,13 @@ Path InstructionFindItem::finalize( Task& task, Planner& planner, const Coord& s
   return path;
 }
 
-boost::ptr_vector<Task> InstructionFindItem::makeMyTasks( Planner& planner, const Area* occupies, const Coord& planEnd, const boost::ptr_list<Area>& areas ) const
+boost::ptr_vector<Task> InstructionFindItem::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const
 {
   boost::ptr_vector<Task> tasks;
-  std::auto_ptr<Task> task( new Task( *this, planner, &*occupies ) );
-  if ( estimateScore( *task, planEnd ) )
-  {
-    tasks.push_back( task.release() );
-  }
+  Task* task = new Task( *this, planner );
+  task->setScore( ( carryAfter == VOID || carryAfter == ENDPLAN ) ? 50 : -50 );
+  task->setSteps( 20 ); // just assume we can find the target item(s)
+  task->setGuessedEnd( start ); // somewhere around here
+  tasks.push_back( task );
   return tasks;
 }

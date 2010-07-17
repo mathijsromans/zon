@@ -18,6 +18,8 @@ class OccArea : public Area
    */
   virtual void resizeTo(const Rectangle& newRect);
 
+  virtual void draw(BITMAP* mainscreen, int PICSZ, const Coord& viewOrigin, bool isSelected) const;
+
   /**
    * Is the area filled with empty floor
    * @return true if it is clear

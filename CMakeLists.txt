@@ -14,6 +14,7 @@ ADD_DEFINITIONS(-Wall -Wextra -Wshadow -O0 -g)
 
 #list all source files here
 ADD_EXECUTABLE(zon
+src/instructionanswerrequest.cpp
 src/instructiongohome.cpp
 src/instructionmove.cpp
 src/instructionfinditem.cpp
@@ -40,5 +41,5 @@ src/producearea.cpp
 src/areamanager.cpp)
 
 #need to link to some other libraries ? just add them here
-target_link_libraries(zon alleg-4.2.2 net boost_signals)
+target_link_libraries(zon alleg-4.2.2 boost_signals)
 

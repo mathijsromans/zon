@@ -1,5 +1,6 @@
 #include "occarea.h"
 #include "field.h"
+#include "userinterface.h"
 
 OccArea::OccArea( Planner& planner, const Coord& c, Serf::Type type )
   : Area( planner, c, type),
@@ -25,6 +26,16 @@ void OccArea::resizeTo(const Rectangle& newRect)
   }
   resetOccupant();
   Area::resizeTo( checkRect );
+}
+
+void OccArea::draw(BITMAP* mainscreen, int PICSZ, const Coord& viewOrigin, bool isSelected) const
+{
+  int color = isSelected ? ( m_occupant ? 13 : 12 ) : ( m_occupant ? ( isActive() ? 15 : 16 ) : 161 );
+  Rectangle viewRect = (*this - viewOrigin) * PICSZ;
+  UserInterface::drawRect(mainscreen, viewRect.getTopLeft().x, viewRect.getTopLeft().y, viewRect.getBottomRight().x, viewRect.getBottomRight().y, color);
+  UserInterface::drawRect(mainscreen,viewRect.getTopLeft().x + 2, viewRect.getTopLeft().y + 2, viewRect.getBottomRight().x - 2, viewRect.getBottomRight().y - 2,color);
+  UserInterface::printText(mainscreen,viewRect.getTopLeft().x, viewRect.getTopLeft().y, color,"##");
+  UserInterface::printText(mainscreen,viewRect.getBottomRight().x - PICSZ/2, viewRect.getBottomRight().y - PICSZ/2 ,color, "");  
 }
 
 void OccArea::resetOccupant()

@@ -24,7 +24,9 @@ Area::~Area()
 void Area::moveTo(Coord c)
 {
   Coord size = getBottomRight() - getTopLeft();
-  c = Rectangle( Coord(1, 1), Coord(MAPWIDTH, MAPHEIGHT) - size ).project( c );
+  Rectangle world = field.getInteriorWorldRect();
+  world.setBottomRight( world.getBottomRight() - size + Coord(1, 1) );
+  c = world.project( c );
   resizeTo( Rectangle(c, c + size) );
 }
 
@@ -43,14 +45,13 @@ void Area::resizeTo(Coord c, Coord fix)
     if (c.y >=MAPHEIGHT - 1)
       c.y -= 4;
   }
-  c = Rectangle( 0, 0, MAPWIDTH, MAPHEIGHT ).project( c );
+  c = field.getWorldRect().project( c );
   resizeTo( Rectangle(std::min(fix.x, c.x), std::min(fix.y, c.y), std::max(fix.x, c.x) + 1, std::max(fix.y, c.y) + 1) );
 }
 
 bool Area::checkNewRect( Rectangle& newRect ) const
 {
-  Rectangle worldRect( Coord(1, 1), Coord(MAPWIDTH - 1, MAPHEIGHT - 1) );
-  newRect = newRect.intersection( worldRect );
+  newRect = newRect.intersection( field.getInteriorWorldRect() );
   return ( getTopLeft() != newRect.getTopLeft() ||
            getBottomRight() != newRect.getBottomRight() );
 }

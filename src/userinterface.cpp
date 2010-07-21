@@ -23,8 +23,9 @@ inline std::string stringify(int x)
   return o.str();
 } 
 
-UserInterface::UserInterface(Player& player) :
+UserInterface::UserInterface( Player& player, const boost::ptr_vector<Player>& players ) :
   m_player(player),
+  m_players(players),
   m_sidescreenWidth ( 112 ),
   m_mousemode( VOID ),
   m_togglemode( false ),
@@ -40,9 +41,8 @@ UserInterface::~UserInterface()
 {
 }
 
-void UserInterface::init( const Coord& startPosition )
+void UserInterface::init()
 {
-  m_viewOrigin = startPosition;
   if (allegro_init()) 
     error("allegro_init failed");
   install_timer();
@@ -59,6 +59,11 @@ void UserInterface::init( const Coord& startPosition )
 //     multiplayerinit();
 //   else
   show_mouse(0);
+}
+
+void UserInterface::setViewOrigin( const Coord& pos )
+{
+  m_viewOrigin = pos;
 }
 
 void UserInterface::loadImages()
@@ -124,7 +129,7 @@ void UserInterface::loadImages()
   destroy_bitmap(one_pic);
   destroy_bitmap(big);
   set_palette(my_palette);
-  RGB black = { 0,  0,  0  };
+  RGB black = { 0, 0, 0, 0 };
   set_color(0,&black);
   gui_bg_color=64;
   m_mainscreen=create_bitmap(SCREEN_W-m_sidescreenWidth,SCREEN_H);
@@ -223,7 +228,7 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
     const Serf *s = Serf::getSerf(*posIt);
     if (s)
     {
-      s->draw(m_mainscreen,(posIt->x - m_viewOrigin.x)*PICSZ+s->drawOffsetX(tick),(posIt->y - m_viewOrigin.y)*PICSZ+s->drawOffsetY(tick), tick);
+      s->draw(m_mainscreen,(posIt->x - m_viewOrigin.x)*PICSZ,(posIt->y - m_viewOrigin.y)*PICSZ, tick);
     }
   }
   if (m_togglemode)
@@ -251,13 +256,19 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
       }
     }
   }
-  const boost::ptr_vector<Area>& areas = m_player.getPlanner().getAreaManager().getAreas();
-  for (boost::ptr_vector<Area>::const_iterator it = areas.begin(); it != areas.end(); ++it)
+  for ( boost::ptr_vector<Player>::const_iterator pl = m_players.begin(); pl != m_players.end(); ++pl )
   {
-    const Area *a = &*it;
-    if ( m_togglemode || a->getType() != Serf::BUILDER )
+    if ( &*pl == &m_player || m_togglemode )
     {
-      a->draw(m_mainscreen, PICSZ, m_viewOrigin, a == m_area );
+      const boost::ptr_vector<Area>& areas = pl->getPlanner().getAreaManager().getAreas();
+      for (boost::ptr_vector<Area>::const_iterator it = areas.begin(); it != areas.end(); ++it)
+      {
+        const Area *a = &*it;
+        if ( m_togglemode || a->getType() != Serf::BUILDER )
+        {
+          a->draw(m_mainscreen, PICSZ, m_viewOrigin, a == m_area );
+        }
+      }
     }
   }
   if (m_area)
@@ -478,6 +489,7 @@ void UserInterface::userInput( Zon* theZon )
         Serf::Type pushed = Serf::Type(((mouse_y-SCREEN_H+140)/PICSZ)*3+(mouse_x-SCREEN_W+m_sidescreenWidth-(m_sidescreenWidth-3*PICSZ)/2)/PICSZ+2);
         if (pushed > Serf::BUILDER && pushed < Serf::N_TYPES)
         {
+          m_mousemode = VOID;
           if ( pushed == Serf::TEACHER )
           {
             m_area = new ProduceArea( m_player.getPlanner(), m_viewOrigin, pushed );
@@ -568,4 +580,19 @@ void UserInterface::drawRectFill(BITMAP *bmp, int x1, int y1, int x2, int y2, in
 void UserInterface::printText(BITMAP *bmp, int x, int y, int color, const char *s)
 {
   textout_ex(bmp, font, s, x, y, color, 68); 
+}
+
+void UserInterface::victory( Player& player )
+{
+  std::string msg;
+  if ( &player == &m_player )
+  {
+    msg = "Congratulations, you have won the game in turn ";
+  }
+  else
+  {
+    msg = "Too bad, you have lost the game in turn ";
+  }
+  msg += stringify( Global::turn) + "!";
+  alert(msg.c_str(), "", "", "Ok", 0, 'o', 0);
 }

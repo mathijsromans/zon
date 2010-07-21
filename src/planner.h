@@ -19,7 +19,7 @@ class Serf;
 class Planner
 {
   public:
-    Planner();
+    Planner( int playerNumber );
     void createInstructions();
     void itemChanged( const Coord& c, Item oldItem );
     /**
@@ -36,7 +36,10 @@ class Planner
     const CoordSet<MAPWIDTH, MAPHEIGHT>& getTargets() const { return m_targets; }
     std::auto_ptr<Plan> makeBestPlan( const Serf& s );
     AreaManager& getAreaManager() { return m_areaManager; }
+    const AreaManager& getAreaManager() const { return m_areaManager; }
     void clearNoPlanFound() { m_turnNoSerfPlanFound = 0; }
+    void initAI();
+
 
     struct Request
     {
@@ -53,6 +56,7 @@ class Planner
   private:
     void findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<SerialPlan>& bestPlan );
     std::auto_ptr<SerialPlan> findBestPlan( const Serf& s);
+    int m_playerNumber;
     AreaManager m_areaManager;
     CoordSet<MAPWIDTH, MAPHEIGHT> m_targets;
     CoordSet<MAPWIDTH, MAPHEIGHT> m_changeTargets;

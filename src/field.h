@@ -5,6 +5,7 @@
 #include "item.h"
 #include "coord.h"
 #include "fieldmap.h"
+#include "rectangle.h"
 
 #include <vector>
 #include <boost/signals.hpp>
@@ -18,6 +19,9 @@ public:
   void setItem(const Coord& c, Item i);
   bool isPassable(const Coord& c) const { return m_t2pass[m_items(c)] != 0; }
   PathFinder& getPathFinder() { return m_pathFinder; }
+  Rectangle getWorldRect() const { return Rectangle( Coord(0, 0), Coord(MAPWIDTH, MAPHEIGHT) ); }
+  Rectangle getInteriorWorldRect() const { return Rectangle( Coord(1, 1), Coord(MAPWIDTH - 1, MAPHEIGHT - 1) ); }
+
 
   /**
    * Time to go one step from coordinate c in direction d

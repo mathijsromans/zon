@@ -51,7 +51,8 @@ bool OccArea::hasFreeFloor() const
 {
   for (Iterator it = begin(); it != end(); ++it)
   {
-    if ( field.getItem(*it) != FLOOR && field.getItem(*it) != CLASSROOMFLOOR )
+    Item item = field.getItem(*it);
+    if ( item != FLOOR && item <= SPECIALFLOOR_START && item >= SPECIALFLOOR_END )
     {
       return false;
     }

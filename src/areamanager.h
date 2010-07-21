@@ -29,6 +29,7 @@ class AreaManager : boost::noncopyable
     void removeArea(Area* area);
 
     boost::ptr_vector<Area>& getAreas() { return m_allAreas; }
+    const boost::ptr_vector<Area>& getAreas() const { return m_allAreas; }
 
     std::vector<OccArea*>& getOccAreas() { return m_occAreas; }
 

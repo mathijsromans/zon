@@ -23,10 +23,14 @@ public:
   unsigned int nSerf() const { return m_serfs.size(); }
   int getNumber() const { return m_number; }
   Planner& getPlanner() { return m_planner; }
+  const Planner& getPlanner() const { return m_planner; }
+  void setVictoryPointsNeeded( int value ) { m_victoryPointsNeeded = value; }
+  int getVictoryPointsNeeded() const { return m_victoryPointsNeeded; }
 private:
+  int m_number;
   Planner m_planner;
   std::vector<Serf*> m_serfs;
-  int m_number;
+  int m_victoryPointsNeeded;
 
 };
 

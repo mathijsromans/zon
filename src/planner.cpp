@@ -14,7 +14,8 @@
 #include <boost/signal.hpp>
 #include <boost/assign.hpp>
 
-Planner::Planner() :
+Planner::Planner( int playerNumber ) :
+  m_playerNumber( playerNumber ),
   m_turnNoSerfPlanFound( 0 )
 {
   m_connection = field.addItemChangedCallback(bind(&Planner::itemChanged, this, _1, _2));
@@ -29,6 +30,7 @@ void Planner::createInstructions()
     m_instructions.push_back(new InstructionMove(Serf::SERF, InstructionMove::AREATAKE, VOID, static_cast<Item>(i), static_cast<Item>(i), Serf::TAKE, "Serf take item"));
     m_instructions.push_back(new InstructionMove(Serf::SERF, InstructionMove::AREAPUT, static_cast<Item>(i), FLOOR, VOID, Serf::TAKE, "Serf put item"));
   }
+  m_instructions.push_back(new InstructionMove(Serf::SERF, InstructionMove::AREAPUT, FLOUR, static_cast<Item>(SPECIALFLOOR_START + 1 + m_playerNumber), VOID, Serf::TAKE, "Serf put flour to special floor"));
   m_instructions.push_back(new InstructionMove(Serf::BUILDER, InstructionMove::AREA, VOID, STONE, STONE, Serf::TAKE, "Builder take stone"));
   m_instructions.push_back(new InstructionMove(Serf::BUILDER, InstructionMove::AREA, VOID, BOARD, BOARD, Serf::TAKE, "Builder take board"));
   m_instructions.push_back(new InstructionMove(Serf::BUILDER, InstructionMove::AREA, STONE, ROADBUILD, VOID, Serf::BUILDROAD, "Builder build road"));
@@ -105,7 +107,7 @@ std::auto_ptr<Plan> Planner::makeBestPlan( const Serf& s )
        s.getLoad() == VOID )
   {
     m_turnNoSerfPlanFound = Global::turn;
-    Logger::getLogger() << "No best plan in turn " << Global::turn << "\n";
+//     Logger::getLogger() << "No best plan in turn " << Global::turn << "\n";
   }
   return std::auto_ptr<Plan>();
 }
@@ -175,5 +177,37 @@ void Planner::takeRequest( const Request& request )
   {
     m_requests.erase( it );
   }
+}
+
+// crude - will fix later
+void Planner::initAI()
+{
+  Area* area;
+  area = new Area( *this, Coord(0, 0), Serf::SERF );
+  area->resizeTo( Rectangle(175, 171, 182, 178 ) );
+  m_areaManager.addNewArea( area );
+  area = new Area( *this, Coord(0, 0), Serf::SERF );
+  area->resizeTo( Rectangle(172, 165, 185, 168 ) );
+  m_areaManager.addNewArea( area );
+  area = new OccArea( *this, Coord(0, 0), Serf::FARMER );
+  area->resizeTo( Rectangle(168, 176, 171, 179 ) );
+  m_areaManager.addNewArea( area );
+  area = new OccArea( *this, Coord(0, 0), Serf::GRINDER );
+  area->resizeTo( Rectangle(175, 182, 178, 185 ) );
+  m_areaManager.addNewArea( area );
+  Rectangle victoryRect;
+  Rectangle world = field.getInteriorWorldRect();
+  for ( Rectangle::Iterator p = world.begin(); p != world.end(); ++p )
+  {
+    if ( field.getItem( *p ) == SPECIALFLOOR_START + 1 + m_playerNumber )
+    {
+      victoryRect.add( *p );
+    }
+  }
+  area = new Area( *this, Coord(0, 0), Serf::SERF );
+  area->resizeTo( victoryRect );
+  area->setPort( FLOUR, MAXPORT);
+  m_areaManager.addNewArea( area );
+
 }
 

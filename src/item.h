@@ -22,14 +22,16 @@ enum Item {
   DOOR2 = 17,
   UNSAFEFLOOR = 18,
   UNSAFEFLOORCHECK = 19,
-  CLASSROOMFLOOR = 20,
-  ENDPLAN = 21,
+  SPECIALFLOOR_START = 20,
+  SPECIALFLOOR_END= 25,
+  VICTORYPOINT= 26,
   FORD1 = 33,
   FORD2 = 34,
   DEADSERF = 35,
   WATERFALL1 = 36,
   WATERFALL2 = 37,
   TERRAIN_END,
+  ENDPLAN,
   BUILD_START,
   WALLBUILD,
   FLOORBUILD,
@@ -57,7 +59,7 @@ inline bool equiv(Item item2, Item item1)
     return true;
   if (item1==WALL && item2==DOOR)
     return true;
-  if (item1==FLOOR && (item2==UNSAFEFLOOR || (item2 > PORT_START && item2 < PORT_END)))
+  if (item1==FLOOR && (item2==UNSAFEFLOOR || ( item2 > SPECIALFLOOR_START && item2 < SPECIALFLOOR_END ) || (item2 > PORT_START && item2 < PORT_END)))
     return true;
   if (item1==DOOR1 && (item2==DOOR2 || (item2 > BUILD_START && item2 < BUILD_END)))
     return true;

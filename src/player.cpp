@@ -3,7 +3,9 @@
 #include <algorithm>
 
 Player::Player(int n)
-  : m_number(n)
+  : m_number(n),
+    m_planner(n),
+    m_victoryPointsNeeded(0)
 {
 }
 

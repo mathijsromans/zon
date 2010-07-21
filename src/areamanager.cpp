@@ -57,12 +57,10 @@ void AreaManager::removeBuildAreas(const Coord& c)
 void AreaManager::doBuildMerge(Area* area)
 {
   assert(area->getType() == Serf::BUILDER);
-  
-  Rectangle fieldRect(0, 0, MAPWIDTH, MAPHEIGHT);
   Coord topLeft = area->getTopLeft() - Coord(2, 2);
   Coord bottomRight = area->getBottomRight() + Coord(2, 2);
   Rectangle surrounding(topLeft, bottomRight);
-  surrounding = fieldRect.intersection( surrounding );
+  surrounding = field.getWorldRect().intersection( surrounding );
   boost::ptr_vector<Area>::iterator it;
   do
   {

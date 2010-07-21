@@ -5,6 +5,7 @@
 #include "item.h"
 #include "area.h"
 #include "serf.h"
+#include <boost/ptr_container/ptr_vector.hpp>
 
 class BITMAP;
 class RLE_SPRITE;
@@ -15,11 +16,13 @@ class UserInterface
 {
   public:
     enum SpriteSet { SpriteItem, SpriteQItem, SpriteQHouse, SpriteCr };
-    UserInterface( Player& player );
+    UserInterface( Player& player, const boost::ptr_vector<Player>& players );
     ~UserInterface();
-    void init( const Coord& startPosition );
+    void init();
+    void setViewOrigin( const Coord& pos );
     void userInput( Zon* zon );
     void drawScreen( unsigned int turn, int tick ) const;
+    void victory( Player& player );
     static void error(const char* code,int var1=0, int var2=0, int var3=0, int var4=0);
     static void drawSprite(BITMAP *bmp, int x, int y, SpriteSet set, int sort, int n);
     static void drawRect(BITMAP *bmp, int x1, int y1, int x2, int y2, int color);
@@ -35,6 +38,7 @@ class UserInterface
     bool squareof(const Coord& c, Item item1) const;
 
     Player& m_player;
+    const boost::ptr_vector<Player>& m_players;
     const int m_sidescreenWidth;
     static RLE_SPRITE *itempic[N_OF_ITEMS][N_OF_ITPIC], *crpic[N_OF_SPECIES][8 * Serf::N_TYPES], *qitempic[N_OF_ITEMS][4],*arrowin,*arrowout,*qhousepic[10][4];
     Item m_mousemode;

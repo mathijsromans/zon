@@ -40,6 +40,14 @@ Coord Rectangle::project( const Coord& pos ) const
 
 Rectangle Rectangle::unionWith(const Rectangle& other) const
 {
+  if ( empty() )
+  {
+    return other;
+  }
+  if ( other.empty() )
+  {
+    return *this;
+  }
   Coord topLeft( min( m_topLeft.x, other.m_topLeft.x),
                  min( m_topLeft.y, other.m_topLeft.y) );
   Coord bottomRight( max( m_bottomRight.x, other.m_bottomRight.x ),

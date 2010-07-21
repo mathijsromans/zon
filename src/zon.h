@@ -22,13 +22,12 @@ class Zon
     void speedUp();
 
   private:
-    void initsetvariables();
-
     int m_seedrand, m_tick;
     int m_now, m_speed;
     boost::scoped_ptr<UserInterface> m_userInterface;
     boost::ptr_vector<Player> m_players;
     Player* m_me;
+    bool m_victoryAchieved;
 };
 
 extern Zon zon;

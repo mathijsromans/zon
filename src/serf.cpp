@@ -65,6 +65,8 @@ int Serf::drawOffsetY(int tick) const
 
 void Serf::draw(BITMAP* bmp, int x, int y, int tick) const
 {
+  x += drawOffsetX(tick);
+  y += drawOffsetY(tick);
   int picx, picy;
   if ( m_job == SLEEP)
     picx = 4;
@@ -77,7 +79,7 @@ void Serf::draw(BITMAP* bmp, int x, int y, int tick) const
     picx = 10;
   if (m_load && picx != 10)
       picx += 5;
-  picx += N_OF_PIC_PER_KIND*(m_player.getNumber())%3;
+  picx += N_OF_PIC_PER_KIND*(m_player.getNumber()%3);
   if (m_job == ACT)
     picy = 8*m_type;
   else if (m_type == GRINDER && m_job == ACTPREPARE)
@@ -288,10 +290,20 @@ void Serf::executeJob()
       s_walkOn.remove( m_pos );
     break;
     case TAKE:
-      if (m_load && field.getItem(m_pos) == FLOOR)
+      if (m_load)
       {
-        field.setItem(m_pos, m_load);
-        m_load = VOID;
+        Item item = field.getItem(m_pos);
+        if ( item == FLOOR)
+        {
+          field.setItem(m_pos, m_load);
+          m_load = VOID;
+        }
+        else if ( item == SPECIALFLOOR_START + 1 + m_player.getNumber() )
+        {
+          field.setItem(m_pos, VICTORYPOINT);
+          m_player.setVictoryPointsNeeded( m_player.getVictoryPointsNeeded() - 1 );
+          m_load = VOID;
+        }
       }
       else if ( !m_load && field.getItem(m_pos) )
       {

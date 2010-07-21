@@ -122,6 +122,7 @@ class Area : public Rectangle, public boost::noncopyable
   void setAreaManager( AreaManager* areaManager );
   const AreaManager* getAreaManager() const { return m_areaManager; }
   int getAvailable( Item item ) const { return m_available[item]; }
+  void setPort( Item item, int value ) { m_port[item - PORT_START - 1] = value; }
 
   protected:
 
@@ -131,8 +132,6 @@ class Area : public Rectangle, public boost::noncopyable
       * @param newRect the new size
       */
     bool checkNewRect( Rectangle& newRect) const;
-
-    void setPort( Item item, int value ) { m_port[item - PORT_START - 1] = value; }
 
   private:
     /**

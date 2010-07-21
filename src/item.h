@@ -1,3 +1,4 @@
+
 #ifndef ITEM_H
 #define ITEM_H
 
@@ -25,6 +26,9 @@ enum Item {
   ENDPLAN = 21,
   FORD1 = 33,
   FORD2 = 34,
+  DEADSERF = 35,
+  WATERFALL1 = 36,
+  WATERFALL2 = 37,
   TERRAIN_END,
   BUILD_START,
   WALLBUILD,

@@ -78,9 +78,16 @@ void Area::resizeTo( const Rectangle& newRect )
 
 void Area::itemChanged( const Coord& c, Item oldItem )
 {
-  if ( contains( c ) )
+  if ( contains( c ) && !m_planner.hasTarget(c) )
   {
-    countItems(); // todo: create more efficient method
+    Item newItem = field.getItem( c );
+    --m_available[oldItem];
+    ++m_available[newItem];
+    if ( m_areaManager )
+    {
+       m_areaManager->addToAvailable( oldItem, -1 );
+       m_areaManager->addToAvailable( newItem, +1 );
+    }
   }
 }
 
@@ -88,13 +95,19 @@ void Area::targetChanged( const Coord& c )
 {
   if ( contains( c ) )
   {
-    countItems(); // todo: create more efficient method
+    int diff = m_planner.hasTarget(c) ? -1 : +1;
+    Item item = field.getItem( c );
+    m_available[item] += diff;
+    if ( m_areaManager )
+    {
+       m_areaManager->addToAvailable( item, diff );
+    }
   }
 }
 
 void Area::countItems()
 {
-  boost::array<int, N_OF_ITEMS> keep = m_available;
+  boost::array<int, N_OF_ITEMS> diff = m_available;
   m_available.assign(0);
   for (Iterator it = begin(); it != end(); ++it)
   {
@@ -105,11 +118,11 @@ void Area::countItems()
   }
   if ( m_areaManager )
   {
-    for ( unsigned int i = 0; i < keep.size(); ++i )
+    for ( unsigned int i = 0; i < diff.size(); ++i )
     {
-      keep[i] = m_available[i] - keep[i];
+      diff[i] = m_available[i] - diff[i];
     }
-    m_areaManager->addToAvailable( keep );
+    m_areaManager->addToAvailable( diff );
   }
 }
 

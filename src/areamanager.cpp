@@ -116,6 +116,11 @@ void AreaManager::targetChanged( const Coord& c )
   }
 }
 
+void AreaManager::addToAvailable( Item item, int diff )
+{
+  m_available[item] += diff;
+}
+
 void AreaManager::addToAvailable( const boost::array<int, N_OF_ITEMS>& diff )
 {
   for ( unsigned int i = 0; i < m_available.size(); ++i )

@@ -152,7 +152,7 @@ void Planner::addRequest( const Request& request )
 const Planner::Request* Planner::findNearestAvailableRequest( Serf::Type type, Item carry, const Coord& start ) const
 {
   const Request* best = 0;
-  unsigned int bestDistance;
+  unsigned int bestDistance = 0;
   for ( std::vector<Request>::const_iterator it = m_requests.begin(); it != m_requests.end(); ++it )
   {
     if ( it->type == type && it->carry == carry && !hasTarget( it->pos ) )

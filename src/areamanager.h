@@ -47,6 +47,7 @@ class AreaManager : boost::noncopyable
     void itemChanged( const Coord& c, Item oldItem );
     void targetChanged( const Coord& c );
 
+    void addToAvailable( Item item, int diff );
     void addToAvailable( const boost::array<int, N_OF_ITEMS>& diff );
     int getAvailable( Item item ) const { return m_available[item]; }
     int getAvailableTotal() const { return m_availableTotal; }

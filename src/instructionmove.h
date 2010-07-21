@@ -20,7 +20,7 @@ class InstructionMove : public Instruction
 
   private:
     void estimateScore( Task& task, const Coord& start, const Area& targetArea ) const;
-    virtual boost::ptr_vector<Task> makeMyTasks( Planner& planner, const OccArea* occupies, const Coord& start ) const;
+    virtual std::auto_ptr<boost::ptr_vector<Task> > makeMyTasks( Planner& planner, const OccArea* occupies, const Coord& start ) const;
     TargetType targetType;
     Item targetItem;
 };

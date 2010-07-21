@@ -28,7 +28,7 @@ void Field::setItem(const Coord& c, Item i)
 {
   Item oldItem = m_items(c);
   m_items(c) = i;
-  m_itemChangedSignal(c, oldItem, i);
+  m_itemChangedSignal(c, oldItem);
 }
 
 bool Field::checkFloor(const Coord& c)

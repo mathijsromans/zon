@@ -17,7 +17,7 @@
 Planner::Planner() :
   m_turnNoSerfPlanFound( 0 )
 {
-  m_connection = field.addItemChangedCallback(bind(&Planner::itemChanged, this, _1, _2, _3));
+  m_connection = field.addItemChangedCallback(bind(&Planner::itemChanged, this, _1, _2));
   createInstructions();
 }
 
@@ -52,9 +52,9 @@ void Planner::createInstructions()
   m_instructions.push_back(new InstructionAnswerRequest(Serf::SERF, VOID, ENDPLAN, Serf::ACTPREPARE, "Serf get education" ));
 }
 
-void Planner::itemChanged( const Coord& c, Item oldItem, Item newItem )
+void Planner::itemChanged( const Coord& c, Item oldItem )
 {
-  m_areaManager.itemChanged( c, oldItem, newItem );
+  m_areaManager.itemChanged( c, oldItem );
   m_changeTargets.add(c);
   m_areaManager.removeBuildAreas( c );
 }
@@ -64,13 +64,13 @@ void Planner::setTarget( const Coord& c )
   assert(!m_targets.has(c));
   m_changeTargets.remove(c);
   m_targets.add(c);
-  m_areaManager.targetChanged( c, true );
+  m_areaManager.targetChanged( c );
 }
 
 void Planner::unsetTarget( const Coord& c )
 {
   m_targets.remove(c);
-  m_areaManager.targetChanged( c, false );
+  m_areaManager.targetChanged( c );
 }
 
 void Planner::newBuilding(const Coord& pos)
@@ -131,7 +131,7 @@ void Planner::findBestContinuation( SerialPlan& currentPlan, std::auto_ptr<Seria
   }
   for (boost::ptr_vector<Instruction>::const_iterator instruction = m_instructions.begin(); instruction != m_instructions.end(); ++instruction)
   {
-    boost::ptr_vector<Task> tasks = instruction->makeTasks( *this, currentPlan.getSerf().getType(), currentPlan.getSerf().getOccupies(), currentPlan.carryAfter(), currentPlan.getEnd() );
+    boost::ptr_vector<Task> tasks( instruction->makeTasks( *this, currentPlan.getSerf().getType(), currentPlan.getSerf().getOccupies(), currentPlan.carryAfter(), currentPlan.getEnd() ) );
     while ( !tasks.empty() )
     {
       currentPlan.addTask( tasks.pop_back().release() );

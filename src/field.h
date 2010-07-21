@@ -34,7 +34,7 @@ public:
    */
   bool checkFloor(const Coord& c);
 
-  boost::signals::connection addItemChangedCallback( const boost::signal<void (const Coord&, Item, Item)>::slot_type& slot )
+  boost::signals::connection addItemChangedCallback( const boost::signal<void (const Coord&, Item)>::slot_type& slot )
   {
     return m_itemChangedSignal.connect( slot );
   }
@@ -46,7 +46,7 @@ private:
   FieldMap<Item> m_items;
   PathFinder m_pathFinder;
   std::vector<int> m_t2pass;
-  boost::signal<void (const Coord&, Item, Item)> m_itemChangedSignal;
+  boost::signal<void (const Coord&, Item)> m_itemChangedSignal;
 };
 
 extern Field field;

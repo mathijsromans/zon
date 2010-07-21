@@ -28,7 +28,7 @@ Path InstructionFindItem::finalize( Task& task, Planner& planner, const Coord& s
   return path;
 }
 
-boost::ptr_vector<Task> InstructionFindItem::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const
+std::auto_ptr<boost::ptr_vector<Task> > InstructionFindItem::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const
 {
   boost::ptr_vector<Task> tasks;
   Task* task = new Task( *this, planner );
@@ -36,5 +36,5 @@ boost::ptr_vector<Task> InstructionFindItem::makeMyTasks( Planner& planner, cons
   task->setSteps( 20 ); // just assume we can find the target item(s)
   task->setGuessedEnd( start ); // somewhere around here
   tasks.push_back( task );
-  return tasks;
+  return tasks.release();
 }

@@ -100,19 +100,19 @@ void AreaManager::doBuildMerge(Area* area)
   while ( it != m_allAreas.end() );
 }
 
-void AreaManager::itemChanged( const Coord& c, Item oldItem, Item newItem )
+void AreaManager::itemChanged( const Coord& c, Item oldItem )
 {
   for (boost::ptr_vector<Area>::iterator it = m_allAreas.begin(); it != m_allAreas.end();++it)
   {
-    it->itemChanged(c, oldItem, newItem);
+    it->itemChanged(c, oldItem);
   }
 }
 
-void AreaManager::targetChanged( const Coord& c, bool set )
+void AreaManager::targetChanged( const Coord& c )
 {
   for (boost::ptr_vector<Area>::iterator it = m_allAreas.begin(); it != m_allAreas.end(); ++it)
   {
-    it->targetChanged(c, set);
+    it->targetChanged(c);
   }
 }
 

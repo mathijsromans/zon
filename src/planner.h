@@ -21,7 +21,7 @@ class Planner
   public:
     Planner();
     void createInstructions();
-    void itemChanged( const Coord& c, Item oldItem, Item newItem );
+    void itemChanged( const Coord& c, Item oldItem );
     /**
      * Make or adjust areas so building can take place
      * @param pos position

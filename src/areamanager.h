@@ -44,8 +44,8 @@ class AreaManager : boost::noncopyable
      */
     void doBuildMerge(Area* area);
 
-    void itemChanged( const Coord& c, Item oldItem, Item newItem );
-    void targetChanged( const Coord& c, bool set );
+    void itemChanged( const Coord& c, Item oldItem );
+    void targetChanged( const Coord& c );
 
     void addToAvailable( const boost::array<int, N_OF_ITEMS>& diff );
     int getAvailable( Item item ) const { return m_available[item]; }

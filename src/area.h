@@ -53,9 +53,9 @@ class Area : public Rectangle, public boost::noncopyable
    */
   virtual void resizeTo(const Rectangle& newRect);
 
-  void itemChanged( const Coord& c, Item oldItem, Item newItem );
+  void itemChanged( const Coord& c, Item newItem );
 
-  void targetChanged( const Coord& c, bool set );
+  void targetChanged( const Coord& c );
 
   /**
    * Draw the area

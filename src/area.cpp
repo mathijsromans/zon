@@ -76,7 +76,7 @@ void Area::resizeTo( const Rectangle& newRect )
   countItems();
 }
 
-void Area::itemChanged( const Coord& c, Item /*oldItem*/, Item /*newItem*/ )
+void Area::itemChanged( const Coord& c, Item oldItem )
 {
   if ( contains( c ) )
   {
@@ -84,7 +84,7 @@ void Area::itemChanged( const Coord& c, Item /*oldItem*/, Item /*newItem*/ )
   }
 }
 
-void Area::targetChanged( const Coord& c, bool /*set*/ )
+void Area::targetChanged( const Coord& c )
 {
   if ( contains( c ) )
   {

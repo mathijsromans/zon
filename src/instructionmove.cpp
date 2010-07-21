@@ -52,10 +52,11 @@ void InstructionMove::estimateScore( Task& task, const Coord& start, const Area&
     int total = targetArea.getAreaManager()->getAvailable(item);
     int totaltotal = targetArea.getAreaManager()->getAvailableTotal();
     double oldTotalFr = static_cast<double>(total) / totaltotal;
-    if ( std::abs( oldFr - oldTotalFr ) > 0.05 )   // more than 5% off
+    double newFr = static_cast<double>(areaTotal + multiplier) / areaTotalTotal;
+    double newTotalFr = static_cast<double>(total + multiplier) / totaltotal;
+    if ( std::abs( oldFr - oldTotalFr ) > 0.1 ||
+         std::abs( newFr - newTotalFr ) > 0.1)   // more than 10% off
     {
-      double newFr = static_cast<double>(areaTotal + multiplier) / areaTotalTotal;
-      double newTotalFr = static_cast<double>(total + multiplier) / totaltotal;
       score += 0.1 * ( std::abs( oldFr - oldTotalFr ) - std::abs( newFr - newTotalFr) );
     }
   }
@@ -68,7 +69,7 @@ Path InstructionMove::finalize( Task& task, Planner& /*planner*/, const Coord& s
   return field.getPathFinder().findPath( start, task.getEnd() );
 }
 
-boost::ptr_vector<Task> InstructionMove::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const
+std::auto_ptr<boost::ptr_vector<Task> > InstructionMove::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const
 {
   boost::ptr_vector<Task> tasks;
   const boost::ptr_vector<Area>& areas = planner.getAreaManager().getAreas();
@@ -81,5 +82,5 @@ boost::ptr_vector<Task> InstructionMove::makeMyTasks( Planner& planner, const Oc
       tasks.push_back( task );
     }
   }
-  return tasks;
+  return tasks.release();
 }

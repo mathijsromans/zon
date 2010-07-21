@@ -14,7 +14,7 @@ class InstructionFindItem : public Instruction
                  std::string setDescription );
     virtual Path finalize( Task& task, Planner& planner, const Coord& start ) const;
   private:
-    virtual boost::ptr_vector<Task> makeMyTasks( Planner& planner, const OccArea* occupies, const Coord& start ) const;
+    virtual std::auto_ptr<boost::ptr_vector<Task> > makeMyTasks( Planner& planner, const OccArea* occupies, const Coord& start ) const;
     std::vector<Item> targetItems;
 };
 

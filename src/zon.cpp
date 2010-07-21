@@ -11,7 +11,7 @@
 #include <allegro.h>
 
 
-#define N_OF_SERF_START 40
+#define N_OF_SERF_START 30
 
 Zon zon;
 
@@ -38,7 +38,7 @@ void Zon::init()
   m_userInterface.reset( new UserInterface(*m_me, m_players) );
   m_userInterface->init();
   install_int_ex(timecounter, BPS_TO_TIMER(FPS));
-  m_speed = 50;
+  m_speed = 35;
   m_seedrand = 0;
   srand(m_seedrand);
   for (unsigned int i = 0; i < m_players.size(); ++i)
@@ -62,7 +62,11 @@ void Zon::init()
         pos = startPosition + Coord(randomNum(50), randomNum(50));
       } while (Serf::getSerf(pos) || !field.isPassable(pos));
       Serf::Type type = Serf::Type( j % Serf::N_TYPES );
-      if (j < N_OF_SERF_START / 2)
+      if (j < N_OF_SERF_START / 5)
+      {
+        type = Serf::BUILDER;
+      }
+      else if (j < N_OF_SERF_START / 2)
       {
         type = Serf::SERF;
       }
@@ -82,15 +86,7 @@ void Zon::init()
 
 void Zon::setSpeed(int speed)
 {
-  m_speed = speed;
-  if (speed < 1)
-  {
-    speed = 1;
-  }
-  else if ( speed > 32000 )
-  {
-    speed = 32000;
-  }
+  m_speed = std::max( speed, 0 );
 }
 
 void Zon::speedUp()

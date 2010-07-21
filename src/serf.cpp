@@ -72,9 +72,9 @@ void Serf::draw(BITMAP* bmp, int x, int y, int tick) const
     picx = 4;
   else if (m_job == MOVE||m_job == TAKE)
     if (m_dir & 1)    //diagonal
-      picx = (((m_dir+1)%8)>>2)*2;
+      picx = (((m_dir+1)%8)/4)*2;
     else
-      picx = m_dir>>1;
+      picx = m_dir/2;
   else
     picx = 10;
   if (m_load && picx != 10)
@@ -92,8 +92,11 @@ void Serf::draw(BITMAP* bmp, int x, int y, int tick) const
     picy = (((tick+16*m_pass)/8)&7)+8*m_type;
   else
     picy = (((tick+16*m_pass)/m_passtot)&7)+8*m_type;
-  if (picx%5 != 3&&m_job != SLEEP)
+  bool drawAfter = ( picx % N_OF_PIC_PER_KIND ) % 5 == 3 || m_job == SLEEP;
+  if ( !drawAfter )
+  {
     UserInterface::drawSprite(bmp, x, y, UserInterface::SpriteCr, picx, picy);
+  }
   if (m_load && (m_type == SERF || m_type == BUILDER))
   {
     if (m_job != SLEEP)
@@ -101,8 +104,10 @@ void Serf::draw(BITMAP* bmp, int x, int y, int tick) const
     else
       UserInterface::drawSprite(bmp, x, y+9, UserInterface::SpriteItem, m_load, 4);
   }
-  if (picx%5 == 3||m_job == SLEEP)
+  if ( drawAfter )
+  {
     UserInterface::drawSprite(bmp, x, y, UserInterface::SpriteCr, picx, picy);
+  }
 }
 
 void Serf::makePlan()

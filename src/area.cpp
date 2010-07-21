@@ -12,6 +12,7 @@ Area::Area( Planner& planner, const Coord& c, Serf::Type type )
     m_type(type),
     m_areaManager(0)
 {
+  m_available.assign(0);
   m_port.assign(0);
   countItems();
 }

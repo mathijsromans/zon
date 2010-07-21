@@ -6,6 +6,7 @@
 AreaManager::AreaManager() :
   m_availableTotal(0)
 {
+  m_available.assign(0);
 }
 
 AreaManager::~AreaManager()

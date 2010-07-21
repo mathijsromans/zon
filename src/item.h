@@ -59,7 +59,7 @@ inline bool equiv(Item item2, Item item1)
     return true;
   if (item1==WALL && item2==DOOR)
     return true;
-  if (item1==FLOOR && (item2==UNSAFEFLOOR || ( item2 > SPECIALFLOOR_START && item2 < SPECIALFLOOR_END ) || (item2 > PORT_START && item2 < PORT_END)))
+  if (item1==FLOOR && (item2==UNSAFEFLOOR || item2==VICTORYPOINT || ( item2 > SPECIALFLOOR_START && item2 < SPECIALFLOOR_END ) || (item2 > PORT_START && item2 < PORT_END)))
     return true;
   if (item1==DOOR1 && (item2==DOOR2 || (item2 > BUILD_START && item2 < BUILD_END)))
     return true;

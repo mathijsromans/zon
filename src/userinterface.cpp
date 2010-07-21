@@ -203,10 +203,10 @@ void UserInterface::drawSquare(const Coord& c, unsigned int turn) const
   if (m_togglemode)
   {
     const Planner& planner = m_player.getPlanner();
-    if ( planner.hasChangeTarget( c ) )
-    {
-      rectfill(m_mainscreen,pix.x+4,pix.y+6,pix.x+10,pix.y+12,13);
-    }
+//     if ( planner.hasChangeTarget( c ) )
+//     {
+//       rectfill(m_mainscreen,pix.x+4,pix.y+6,pix.x+10,pix.y+12,13);
+//     }
     if ( planner.hasTarget( c ) )
     {
       rectfill(m_mainscreen,pix.x+4,pix.y+6,pix.x+9,pix.y+12,15);
@@ -233,25 +233,28 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
   }
   if (m_togglemode)
   {
-    for (std::vector<Serf*>::const_iterator it = m_player.serfBegin(); it != m_player.serfEnd(); ++it)
+    for ( boost::ptr_vector<Player>::const_iterator pl = m_players.begin(); pl != m_players.end(); ++pl )
     {
-      Serf *s = *it;
-      const Path* path = s->getPath();
-      if (path && path->getBoundingBox().intersects(viewRect))
+      for (std::vector<Serf*>::const_iterator it = pl->serfBegin(); it != pl->serfEnd(); ++it)
       {
-        unsigned long identity = reinterpret_cast<unsigned long>(s);
-        int offset = identity % 7 - 3;
-        RGB rgb = default_palette[ identity % 256];
-        const int color = makecol(4 * rgb.r, 4 * rgb.g, 4 * rgb.b);
-        const float thickness = 1;
-        const std::vector<Direction>& dirs= path->getDirs();
-        Coord pos = path->getStart() - m_viewOrigin;
-        for (std::vector<Direction>::const_iterator dir = dirs.begin(); dir != dirs.end(); ++dir)
+        Serf* s = *it;
+        const Path* path = s->getPath();
+        if (path && path->getBoundingBox().intersects(viewRect))
         {
-          Coord newPos = pos.next(*dir);
-          thick_line(m_mainscreen,    pos.x * PICSZ + PICSZ / 2 + offset,    pos.y * PICSZ + PICSZ / 2 + offset,
-                     newPos.x * PICSZ + PICSZ / 2 + offset, newPos.y * PICSZ + PICSZ / 2 + offset, thickness, color);
-          pos = newPos;
+          unsigned long identity = reinterpret_cast<unsigned long>(s);
+          int offset = identity % 7 - 3;
+          RGB rgb = default_palette[ identity % 256];
+          const int color = makecol(4 * rgb.r, 4 * rgb.g, 4 * rgb.b);
+          const float thickness = 1;
+          const std::vector<Direction>& dirs= path->getDirs();
+          Coord pos = path->getStart() - m_viewOrigin;
+          for (std::vector<Direction>::const_iterator dir = dirs.begin(); dir != dirs.end(); ++dir)
+          {
+            Coord newPos = pos.next(*dir);
+            thick_line(m_mainscreen,    pos.x * PICSZ + PICSZ / 2 + offset,    pos.y * PICSZ + PICSZ / 2 + offset,
+                      newPos.x * PICSZ + PICSZ / 2 + offset, newPos.y * PICSZ + PICSZ / 2 + offset, thickness, color);
+            pos = newPos;
+          }
         }
       }
     }

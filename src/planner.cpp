@@ -16,9 +16,11 @@
 
 Planner::Planner( int playerNumber ) :
   m_playerNumber( playerNumber ),
+  m_targets( Field::current()->getWidth(), Field::current()->getHeight() ),
+  m_changeTargets( Field::current()->getWidth(), Field::current()->getHeight() ),
   m_turnNoSerfPlanFound( 0 )
 {
-  m_connection = field.addItemChangedCallback(bind(&Planner::itemChanged, this, _1, _2));
+  m_connection = Field::current()->addItemChangedCallback(bind(&Planner::itemChanged, this, _1, _2));
   createInstructions();
 }
 
@@ -196,10 +198,10 @@ void Planner::initAI()
   area->resizeTo( Rectangle(175, 182, 178, 185 ) );
   m_areaManager.addNewArea( area );
   Rectangle victoryRect;
-  Rectangle world = field.getInteriorWorldRect();
+  Rectangle world = Field::current()->getInteriorWorldRect();
   for ( Rectangle::Iterator p = world.begin(); p != world.end(); ++p )
   {
-    if ( field.getItem( *p ) == SPECIALFLOOR_START + 1 + m_playerNumber )
+    if ( Field::current()->getItem( *p ) == SPECIALFLOOR_START + 1 + m_playerNumber )
     {
       victoryRect.add( *p );
     }

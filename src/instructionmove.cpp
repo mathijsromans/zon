@@ -66,7 +66,7 @@ void InstructionMove::estimateScore( Task& task, const Coord& start, const Area&
 
 Path InstructionMove::finalize( Task& task, Planner& /*planner*/, const Coord& start ) const
 {
-  return field.getPathFinder().findPath( start, task.getEnd() );
+  return Field::current()->getPathFinder().findPath( start, task.getEnd() );
 }
 
 std::auto_ptr<boost::ptr_vector<Task> > InstructionMove::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const

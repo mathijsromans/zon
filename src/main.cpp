@@ -4,8 +4,8 @@
 
 int main()
 {
-  zon.init();
-  zon.mainLoop();
+  Zon zon;
+  zon.run();
   return 0;
 }
 

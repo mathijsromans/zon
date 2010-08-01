@@ -25,7 +25,7 @@ Area::~Area()
 void Area::moveTo(Coord c)
 {
   Coord size = getBottomRight() - getTopLeft();
-  Rectangle world = field.getInteriorWorldRect();
+  Rectangle world = Field::current()->getInteriorWorldRect();
   world.setBottomRight( world.getBottomRight() - size + Coord(1, 1) );
   c = world.project( c );
   resizeTo( Rectangle(c, c + size) );
@@ -41,18 +41,18 @@ void Area::resizeTo(Coord c, Coord fix)
   if (m_type > Serf::BUILDER)
   {
     c = fix + Coord(2, 2);
-    if (c.x >= MAPWIDTH - 1)
+    if (c.x >= static_cast<int>(Field::current()->getWidth()) - 1)
       c.x -= 4;
-    if (c.y >=MAPHEIGHT - 1)
+    if (c.y >=static_cast<int>(Field::current()->getHeight()) - 1)
       c.y -= 4;
   }
-  c = field.getWorldRect().project( c );
+  c = Field::current()->getWorldRect().project( c );
   resizeTo( Rectangle(std::min(fix.x, c.x), std::min(fix.y, c.y), std::max(fix.x, c.x) + 1, std::max(fix.y, c.y) + 1) );
 }
 
 bool Area::checkNewRect( Rectangle& newRect ) const
 {
-  newRect = newRect.intersection( field.getInteriorWorldRect() );
+  newRect = newRect.intersection( Field::current()->getInteriorWorldRect() );
   return ( getTopLeft() != newRect.getTopLeft() ||
            getBottomRight() != newRect.getBottomRight() );
 }
@@ -82,7 +82,7 @@ void Area::itemChanged( const Coord& c, Item oldItem )
 {
   if ( contains( c ) && !m_planner.hasTarget(c) )
   {
-    Item newItem = field.getItem( c );
+    Item newItem = Field::current()->getItem( c );
     --m_available[oldItem];
     ++m_available[newItem];
     if ( m_areaManager )
@@ -98,7 +98,7 @@ void Area::targetChanged( const Coord& c )
   if ( contains( c ) )
   {
     int diff = m_planner.hasTarget(c) ? -1 : +1;
-    Item item = field.getItem( c );
+    Item item = Field::current()->getItem( c );
     m_available[item] += diff;
     if ( m_areaManager )
     {
@@ -115,7 +115,7 @@ void Area::countItems()
   {
     if ( !m_planner.hasTarget( *it ) )
     {
-        m_available[field.getItem(*it)]++;
+        m_available[Field::current()->getItem(*it)]++;
     }
   }
   if ( m_areaManager )
@@ -135,7 +135,7 @@ Coord Area::findNearestItem (const Coord& from, Item load) const
   int min = -1;
   for (Iterator it = begin(); it != end(); ++it)
   {
-    if ( !m_planner.hasTarget( *it ) && field.getItem(*it) == load )
+    if ( !m_planner.hasTarget( *it ) && Field::current()->getItem(*it) == load )
     {
       int testMin = from.minDistanceTo( *it );
       if (min == -1 || testMin < min)
@@ -222,7 +222,7 @@ bool Area::hasBuilding() const
 {
   for (Iterator it = begin(); it != end(); ++it)
   {
-    if (equiv(field.getItem(*it), DOOR1))
+    if (equiv(Field::current()->getItem(*it), DOOR1))
     {
       return true;
     }

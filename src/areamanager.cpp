@@ -61,7 +61,7 @@ void AreaManager::doBuildMerge(Area* area)
   Coord topLeft = area->getTopLeft() - Coord(2, 2);
   Coord bottomRight = area->getBottomRight() + Coord(2, 2);
   Rectangle surrounding(topLeft, bottomRight);
-  surrounding = field.getWorldRect().intersection( surrounding );
+  surrounding = Field::current()->getWorldRect().intersection( surrounding );
   boost::ptr_vector<Area>::iterator it;
   do
   {
@@ -77,7 +77,7 @@ void AreaManager::doBuildMerge(Area* area)
           rect = area->unionWith(*other);
           for ( Rectangle::Iterator c = rect.begin(); c != rect.end(); ++c)
           {
-            Item item = field.getItem(*c);
+            Item item = Field::current()->getItem(*c);
             if (item > BUILD_START && item < BUILD_END)
             {
               n++;

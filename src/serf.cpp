@@ -8,9 +8,10 @@
 #include "plan.h"
 #include "player.h"
 #include <cassert>
+#include <boost/assign/list_of.hpp>
 
-FieldMap<Serf*> Serf::s_sf;
-CoordSet<MAPWIDTH, MAPHEIGHT> Serf::s_walkOn;
+const boost::array<std::string, Serf::N_TYPES> Serf::s_serfTypeNames = boost::assign::list_of
+("serf")("builder")("stonemason")("woodcutter")("grinder")("woman")("farmer")("teacher");
 
 Serf::Serf(Type type, Player& player, const Coord& pos)
   : m_type(type),
@@ -18,7 +19,7 @@ Serf::Serf(Type type, Player& player, const Coord& pos)
     m_jobResult( R_SUCCESS ),
     m_player(player)
 {
-  s_sf( m_pos ) = this;
+  Field::current()->setSerf( m_pos, this );
   m_status = READY;
   m_dir  =  1;
   m_job = SLEEP;
@@ -209,7 +210,7 @@ void Serf::checkJob()
     return;
   }
   Coord nextPos = m_pos.next(m_dir);
-  if ( !field.isPassable(nextPos) )
+  if ( !Field::current()->isPassable(nextPos) )
   {
     m_jobResult = R_FAILED;
     m_job = SLEEP;
@@ -217,7 +218,7 @@ void Serf::checkJob()
     m_status = JOBCHECKED;
     return;
   }
-  if ( s_walkOn.has( nextPos ) )
+  if ( Field::current()->getWalkOn().has( nextPos ) )
   {
     m_jobResult = R_DELAYED;
     m_job = SLEEP;
@@ -225,16 +226,20 @@ void Serf::checkJob()
     m_status = JOBCHECKED;
     return;
   }
-  m_passtot = field.passingTime( m_pos, m_dir );
-  if ( Serf *other = s_sf(nextPos ) )
+  m_passtot = Field::current()->passingTime( m_pos, m_dir );
+  if ( m_type != SERF )
+  {
+    m_passtot *= 2;
+  }
+  if ( Serf *other = Field::current()->getSerf( nextPos ) )
   {
     if ( other->m_status == JOBCHECKING ) // other is waiting for me
     {
       m_status = JOBCHECKED;
       m_passtot = other->maxpasstime();
       if ( other->m_pos.next(other->m_dir) == m_pos &&
-           ( field.getItem(m_pos) != ROAD ||
-             field.getItem(other->m_pos) != ROAD ) )
+           ( Field::current()->getItem(m_pos) != ROAD ||
+             Field::current()->getItem(other->m_pos) != ROAD ) )
       {
         m_passtot *= 2;            //passing costs more time
       }
@@ -249,7 +254,7 @@ void Serf::checkJob()
         m_status = JOBCHECKED;   // will check now
       }
       if ( other->m_job != MOVE ||  // other is not moving
-            s_walkOn.has( nextPos ) ||  // somebody else will walk on nextPos
+            Field::current()->getWalkOn().has( nextPos ) ||  // somebody else will walk on nextPos
             other->m_pass > other->m_passtot / 2 ) // other is arriving on nextPos
       {
         m_jobResult = R_DELAYED;
@@ -263,7 +268,7 @@ void Serf::checkJob()
   }
   if ( m_job == MOVE )
   {
-    s_walkOn.add( nextPos );  //will walk there for sure
+    Field::current()->getWalkOn().add( nextPos );  //will walk there for sure
   }
   m_status = JOBCHECKED;
 }
@@ -286,35 +291,35 @@ void Serf::executeJob()
   switch(m_job)
   {
     case MOVE:
-      if(s_sf(m_pos) == this)
+      if(Field::current()->getSerf(m_pos) == this)
       {
-        s_sf(m_pos) = 0;
+        Field::current()->setSerf(m_pos, 0);
       }
       m_pos = m_pos.next(m_dir);
-      s_sf(m_pos) = this;
-      s_walkOn.remove( m_pos );
+      Field::current()->setSerf(m_pos, this);
+      Field::current()->getWalkOn().remove( m_pos );
     break;
     case TAKE:
       if (m_load)
       {
-        Item item = field.getItem(m_pos);
+        Item item = Field::current()->getItem(m_pos);
         if ( item == FLOOR)
         {
-          field.setItem(m_pos, m_load);
+          Field::current()->setItem(m_pos, m_load);
           m_load = VOID;
         }
         else if ( item == SPECIALFLOOR_START + 1 + m_player.getNumber() )
         {
-          field.setItem(m_pos, VICTORYPOINT);
+          Field::current()->setItem(m_pos, VICTORYPOINT);
           m_player.setVictoryPointsNeeded( m_player.getVictoryPointsNeeded() - 1 );
           m_load = VOID;
         }
       }
-      else if ( !m_load && field.getItem(m_pos) )
+      else if ( !m_load && Field::current()->getItem(m_pos) )
       {
-        m_load = field.getItem(m_pos);
+        m_load = Field::current()->getItem(m_pos);
         assert(m_load > PORT_START && m_load < PORT_END);
-        field.setItem( m_pos, FLOOR );
+        Field::current()->setItem( m_pos, FLOOR );
       }
     break;
     case ACT:
@@ -324,7 +329,7 @@ void Serf::executeJob()
           // do nothing
         break;
         case WOMAN:
-          if ( !s_sf( m_pos.next() ) )
+          if ( !Field::current()->getSerf( m_pos.next() ) )
           {
             getPlayer().createSerf( SERF, m_pos.next() );
             m_load = VOID;
@@ -336,7 +341,7 @@ void Serf::executeJob()
         break;
         case TEACHER:
         {
-          Serf* student = s_sf( m_pos.next() );
+          Serf* student = Field::current()->getSerf( m_pos.next() );
           if ( student &&
                student->m_type == SERF &&
                ( student->m_job == ACT || student->m_job == ACTPREPARE ) &&
@@ -356,7 +361,7 @@ void Serf::executeJob()
         case GRINDER:
           if ( m_occupies && m_occupies->hasFreeFloor() )
           {
-            field.setItem( m_pos.next(), FLOUR );
+            Field::current()->setItem( m_pos.next(), FLOUR );
             m_load = VOID;
           }
           else
@@ -365,14 +370,14 @@ void Serf::executeJob()
           }
         break;
         case FARMER:
-          if ( !m_load && field.getItem(m_pos) == GRASS )
+          if ( !m_load && Field::current()->getItem(m_pos) == GRASS )
           {
             m_load = GRAIN;
-            field.setItem(m_pos, VOID);
+            Field::current()->setItem(m_pos, VOID);
           }
           else if ( m_occupies && m_occupies->hasFreeFloor() )
           {
-            field.setItem( m_pos.next(), GRAIN );
+            Field::current()->setItem( m_pos.next(), GRAIN );
             m_load = VOID;
           }
           else
@@ -383,18 +388,18 @@ void Serf::executeJob()
         case STONEMASON:
           if ( !m_load )
           {
-            switch ( field.getItem(m_pos) )
+            switch ( Field::current()->getItem(m_pos) )
             {
               case ROCK1:
-                field.setItem(m_pos, VOID);
+                Field::current()->setItem(m_pos, VOID);
                 m_load = ROCK1;
                 break;
               case ROCK2:
-                field.setItem(m_pos, ROCK1);
+                Field::current()->setItem(m_pos, ROCK1);
                 m_load = ROCK1;
                 break;
               case ROCK3:
-                field.setItem(m_pos, ROCK2);
+                Field::current()->setItem(m_pos, ROCK2);
                 m_load = ROCK1;
                 break;
               default:
@@ -405,7 +410,7 @@ void Serf::executeJob()
           {
             for (int i = 0; i < 8; i++)
             {
-              field.setItem(m_pos.next(i), STONE);
+              Field::current()->setItem(m_pos.next(i), STONE);
             }
             m_load = VOID;
           }
@@ -415,16 +420,16 @@ void Serf::executeJob()
           }
         break;
         case WOODCUTTER:
-          if ( !m_load && field.getItem(m_pos) == TREE )
+          if ( !m_load && Field::current()->getItem(m_pos) == TREE )
           {
             m_load = TREE;
-            field.setItem(m_pos, VOID);
+            Field::current()->setItem(m_pos, VOID);
           }
           else if ( m_occupies && m_occupies->hasFreeFloor() )
           {
             for (int i = 0; i < 8; i++)
             {
-              field.setItem(m_pos.next(i), BOARD);
+              Field::current()->setItem(m_pos.next(i), BOARD);
             }
             m_load = VOID;
           }
@@ -438,49 +443,49 @@ void Serf::executeJob()
       }
     break;
     case BUILDWALL:
-      if (m_load == STONE && equiv(field.getItem(m_pos), VOID))
+      if (m_load == STONE && equiv(Field::current()->getItem(m_pos), VOID))
       {
-        field.setItem(m_pos, WALL);
+        Field::current()->setItem(m_pos, WALL);
         m_load = VOID;
         for(int i = 0; i < 8; i++)
         {
-          field.checkFloor(m_pos.next(i));
+          Field::current()->checkFloor(m_pos.next(i));
         }
       }
     break;
     case BUILDFLOOR:
-      if (m_load == BOARD && equiv(field.getItem(m_pos), VOID))
+      if (m_load == BOARD && equiv(Field::current()->getItem(m_pos), VOID))
       {
-        field.setItem(m_pos, UNSAFEFLOOR);
+        Field::current()->setItem(m_pos, UNSAFEFLOOR);
         m_load = VOID;
-        field.checkFloor(m_pos);
+        Field::current()->checkFloor(m_pos);
       }
     break;
     case BUILDDOOR:
-      if (m_load == STONE && equiv(field.getItem(m_pos), VOID))
+      if (m_load == STONE && equiv(Field::current()->getItem(m_pos), VOID))
       {
-        field.setItem(m_pos, DOOR1);
+        Field::current()->setItem(m_pos, DOOR1);
         m_load = VOID;
       }
-      else if (m_load == STONE && field.getItem(m_pos) == DOOR1)
+      else if (m_load == STONE && Field::current()->getItem(m_pos) == DOOR1)
       {
-        field.setItem(m_pos, DOOR2);
+        Field::current()->setItem(m_pos, DOOR2);
         m_load = VOID;
       }
-      else if (m_load == BOARD && field.getItem(m_pos) == DOOR2)
+      else if (m_load == BOARD && Field::current()->getItem(m_pos) == DOOR2)
       {
-        field.setItem(m_pos, DOOR);
+        Field::current()->setItem(m_pos, DOOR);
         m_load = VOID;
       }
       for(int i = 0; i < 8; i++)
       {
-        field.checkFloor(m_pos.next(i));
+        Field::current()->checkFloor(m_pos.next(i));
       }
     break;
     case BUILDROAD:
-      if (m_load == STONE && equiv(field.getItem(m_pos), VOID))
+      if (m_load == STONE && equiv(Field::current()->getItem(m_pos), VOID))
       {
-        field.setItem(m_pos, ROAD);
+        Field::current()->setItem(m_pos, ROAD);
         m_load = VOID;
       }
     break;
@@ -495,7 +500,7 @@ int Serf::maxpasstime()
   {
     return m_passtot;
   }
-  Serf* other  = s_sf(m_pos.next(m_dir));
+  Serf* other  = Field::current()->getSerf(m_pos.next(m_dir));
   assert(other);
   return std::max(m_passtot, other->maxpasstime());
 }

@@ -20,19 +20,17 @@ Serf* Player::createSerf( Serf::Type type, const Coord& pos )
   return s;
 }
 
-void Player::chooseJobs() const
-{
-  std::for_each(m_serfs.begin(), m_serfs.end(), std::mem_fun(&Serf::chooseJob) );
+void Player::chooseJobs() {
+  std::for_each(m_serfs.begin(), m_serfs.end(), std::mem_fun_ref(&Serf::chooseJob) );
 }
 
-void Player::checkJobs() const
-{
-  std::for_each(m_serfs.begin(), m_serfs.end(), std::mem_fun(&Serf::checkJob) );
+void Player::checkJobs() {
+  std::for_each(m_serfs.begin(), m_serfs.end(), std::mem_fun_ref(&Serf::checkJob) );
 }
 
-void Player::doJobs() const
+void Player::doJobs()
 {
-  std::for_each(m_serfs.begin(), m_serfs.end(), std::mem_fun(&Serf::doJob) );
+  std::for_each(m_serfs.begin(), m_serfs.end(), std::mem_fun_ref(&Serf::doJob) );
 }
 
 

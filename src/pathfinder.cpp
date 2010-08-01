@@ -45,18 +45,18 @@ class ReachedPos
 class ReachedItem
 {
   public:
-    ReachedItem(Item item, const Field& field, const CoordSet<MAPWIDTH, MAPHEIGHT>& doNotUse ) : m_item(item), m_field(field), m_doNotUse(doNotUse) {}
+    ReachedItem(Item item, const Field& field, const CoordSet& doNotUse ) : m_item(item), m_field(field), m_doNotUse(doNotUse) {}
     bool operator()(const Coord& c) const { return !m_doNotUse.has(c) && m_field.getItem(c) == m_item; }
   private:
     Item m_item;
     const Field& m_field;
-    const CoordSet<MAPWIDTH, MAPHEIGHT>& m_doNotUse;
+    const CoordSet& m_doNotUse;
 };
 
 class ReachedAnyItemOf
 {
   public:
-    ReachedAnyItemOf( const std::vector<Item>& items, const Field& field, const CoordSet<MAPWIDTH, MAPHEIGHT>& doNotUse ) : m_items(items), m_field(field), m_doNotUse(doNotUse) {}
+    ReachedAnyItemOf( const std::vector<Item>& items, const Field& field, const CoordSet& doNotUse ) : m_items(items), m_field(field), m_doNotUse(doNotUse) {}
     bool operator()(const Coord& c) const
     {
       return !m_doNotUse.has(c) && std::find( m_items.begin(), m_items.end(), m_field.getItem(c) ) != m_items.end();
@@ -64,9 +64,18 @@ class ReachedAnyItemOf
   private:
     const std::vector<Item>& m_items;
     const Field& m_field;
-    const CoordSet<MAPWIDTH, MAPHEIGHT>& m_doNotUse;
+    const CoordSet& m_doNotUse;
 };
 
+}
+
+PathFinder::PathFinder(const Field& field) :
+  g_score(field.getWidth(), field.getHeight()),
+  h_score(field.getWidth(), field.getHeight()),
+  m_field(field),
+  m_openSet(field.getWidth(), field.getHeight()),
+  m_closedSet(field.getWidth(), field.getHeight())
+{
 }
 
 Path PathFinder::findPath(const Coord& start, const Coord& end)
@@ -79,7 +88,7 @@ Path PathFinder::findPath(const Coord& start, const Coord& end)
   return Path();
 }
 
-Path PathFinder::findPath(const Coord& start, Item item, const CoordSet<MAPWIDTH, MAPHEIGHT>& doNotUse, Coord* end)
+Path PathFinder::findPath(const Coord& start, Item item, const CoordSet& doNotUse, Coord* end)
 {
   assert(end);
   if ( makeMap(start, Zero(), ReachedItem(item, m_field, doNotUse), end) )
@@ -89,7 +98,7 @@ Path PathFinder::findPath(const Coord& start, Item item, const CoordSet<MAPWIDTH
   return Path();
 }
 
-Path PathFinder::findPath(const Coord& start, const std::vector<Item>& items, const CoordSet<MAPWIDTH, MAPHEIGHT>& doNotUse, Coord* end)
+Path PathFinder::findPath(const Coord& start, const std::vector<Item>& items, const CoordSet& doNotUse, Coord* end)
 {
   if ( !items.empty() )
   {

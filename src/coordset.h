@@ -1,24 +1,24 @@
 #ifndef COORDSET_H
 #define COORDSET_H
 
-#include <bitset>
+#include <boost/dynamic_bitset.hpp>
 #include <set>
 #include "coord.h"
 
 // efficient implementation of a large set of coordinates
-template<size_t W, size_t H>
 class CoordSet
 {
   public:
-    CoordSet() {}
+    CoordSet( unsigned int width, unsigned int height ) : m_width(width), m_height(height), m_data(width * height) {}
     ~CoordSet() {}
-    void set(const Coord& c, bool value)    { m_data.set(c.y * W + c.x, value); }
-    void add(const Coord& c)    { m_data.set(c.y * W + c.x); }
-    void remove(const Coord& c) { m_data.reset(c.y * W + c.x); }
-    bool has(const Coord& c) const { return m_data[(c.y * W + c.x)]; }
+    void set(const Coord& c, bool value)    { m_data.set(c.y * m_width + c.x, value); }
+    void add(const Coord& c)    { m_data.set(c.y * m_width + c.x); }
+    void remove(const Coord& c) { m_data.reset(c.y * m_width + c.x); }
+    bool has(const Coord& c) const { return m_data[(c.y * m_width + c.x)]; }
     void clear() { m_data.reset(); }
   private:
-    std::bitset<H * W> m_data;
+    unsigned int m_width, m_height;
+    boost::dynamic_bitset<> m_data;
 };
 
 // efficient implementation of a small set of coordinates

@@ -51,7 +51,7 @@ bool OccArea::hasFreeFloor() const
 {
   for (Iterator it = begin(); it != end(); ++it)
   {
-    Item item = field.getItem(*it);
+    Item item = Field::current()->getItem(*it);
     if ( item != FLOOR && !( item > SPECIALFLOOR_START && item < SPECIALFLOOR_END ) )
     {
       return false;
@@ -68,16 +68,16 @@ bool OccArea::isFreeBuilding() const
   }
   for (int a = getTopLeft().x - 1; a < getBottomRight().x + 1; a++)
   {
-    if (!equiv(field.getItem(Coord(a, getTopLeft().y - 1)), WALL))
+    if (!equiv(Field::current()->getItem(Coord(a, getTopLeft().y - 1)), WALL))
       return false;
-    if (!equiv(field.getItem(Coord(a, getBottomRight().y)), WALL))
+    if (!equiv(Field::current()->getItem(Coord(a, getBottomRight().y)), WALL))
       return false;
   }
   for (int b = getTopLeft().y;b < getBottomRight().y; b++)
   {
-    if (!equiv(field.getItem(Coord(getTopLeft().x - 1, b)), WALL))
+    if (!equiv(Field::current()->getItem(Coord(getTopLeft().x - 1, b)), WALL))
       return false;
-    if (!equiv(field.getItem(Coord(getBottomRight().x, b)), WALL))
+    if (!equiv(Field::current()->getItem(Coord(getBottomRight().x, b)), WALL))
       return false;
   }
   return true;

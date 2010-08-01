@@ -33,7 +33,7 @@ class Planner
     bool hasTarget( const Coord& c ) const { return m_targets.has(c); }
     void setTarget( const Coord& c );
     void unsetTarget( const Coord& c );
-    const CoordSet<MAPWIDTH, MAPHEIGHT>& getTargets() const { return m_targets; }
+    const CoordSet& getTargets() const { return m_targets; }
     std::auto_ptr<Plan> makeBestPlan( const Serf& s );
     AreaManager& getAreaManager() { return m_areaManager; }
     const AreaManager& getAreaManager() const { return m_areaManager; }
@@ -58,8 +58,8 @@ class Planner
     std::auto_ptr<SerialPlan> findBestPlan( const Serf& s);
     int m_playerNumber;
     AreaManager m_areaManager;
-    CoordSet<MAPWIDTH, MAPHEIGHT> m_targets;
-    CoordSet<MAPWIDTH, MAPHEIGHT> m_changeTargets;
+    CoordSet m_targets;
+    CoordSet m_changeTargets;
     boost::ptr_vector<Instruction> m_instructions;
     std::vector<Request> m_requests;
 

@@ -19,7 +19,7 @@ InstructionFindItem::InstructionFindItem( Serf::Type setSerfType,
 Path InstructionFindItem::finalize( Task& task, Planner& planner, const Coord& start ) const
 {
   Coord newEnd;
-  Path path = field.getPathFinder().findPath(start, targetItems, planner.getTargets(), &newEnd);
+  Path path = Field::current()->getPathFinder().findPath(start, targetItems, planner.getTargets(), &newEnd);
   if ( path.isValid() )
   {
     task.setEnd( newEnd );

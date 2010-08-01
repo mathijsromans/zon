@@ -2,11 +2,11 @@
 #define ZONSERF_H
 
 #include "item.h"
-#include "fieldmap.h"
-#include "coordset.h"
+#include "coord.h"
 #include <vector>
 #include <memory>
 #include <boost/optional.hpp>
+#include <boost/array.hpp>
 class Area;
 class OccArea;
 class Player;
@@ -18,7 +18,7 @@ class BITMAP;
 class Serf
 {
   public:
-    enum Type { SERF, BUILDER, STONEMASON, WOODCUTTER, GRINDER, WOMAN, FARMER, TEACHER, N_TYPES };
+    enum Type { SERF, BUILDER, STONEMASON, WOODCUTTER, GRINDER, WOMAN, FARMER, TEACHER, N_TYPES };  // don't forget to update s_serfTypeNames!
     enum JobType { SLEEP, MOVE, EAT, TAKE, ACT, BUILD_START, BUILDWALL, BUILDFLOOR, BUILDDOOR, BUILDROAD, BUILD_END, ACTPREPARE };
     Serf(Type type, Player& player, const Coord& pos);
     ~Serf();
@@ -39,9 +39,8 @@ class Serf
     void doJob();
     void startTurn();
     void draw(BITMAP* bmp, int x, int y, int tick) const;
-    static const Serf* getSerf(const Coord& c) { return s_sf(c); }
+    static const boost::array<std::string, N_TYPES>& getSerfTypeNames() { return s_serfTypeNames; }
   private:
-    static CoordSet<MAPWIDTH, MAPHEIGHT> s_walkOn;
     enum StatusType { NONEXIST, READY, JOBCHOSEN, JOBCHECKING, JOBCHECKED };
     void makePlan();
     int rankplan(Area* a1, Area*al2, const Plan& plan);
@@ -59,9 +58,9 @@ class Serf
     std::auto_ptr<Plan> m_plan;
     JobType m_job;
     enum { R_SUCCESS, R_DELAYED, R_FAILED } m_jobResult;
-    static FieldMap<Serf*> s_sf;
     Player& m_player;
     boost::optional<Type> m_becomesType;
+    static const boost::array<std::string, N_TYPES> s_serfTypeNames;
 };
 
 #endif

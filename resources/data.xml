@@ -1,0 +1,13 @@
+<zon>
+  <levels>
+    <level>
+      <text>Welcome to level 1!</text>
+      <filename>level1.bmp</filename>
+      <serfs>
+        <default>2</default>
+        <serf>20</serf>
+        <builder>4</builder>
+      </serfs>
+    </level>
+  </levels>
+</zon>

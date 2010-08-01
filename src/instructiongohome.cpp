@@ -26,7 +26,7 @@ Path InstructionGoHome::finalize( Task& task, Planner& planner, const Coord& sta
     request.pos = task.getEnd().next();
     planner.addRequest( request );
   }
-  return field.getPathFinder().findPath( start, task.getEnd() );
+  return Field::current()->getPathFinder().findPath( start, task.getEnd() );
 }
 
 std::auto_ptr<boost::ptr_vector<Task> > InstructionGoHome::makeMyTasks( Planner& planner, const OccArea* occupies, const Coord& start ) const

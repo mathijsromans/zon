@@ -14,6 +14,8 @@ ADD_DEFINITIONS(-Wall -Wextra -Wshadow -O0 -g)
 
 #list all source files here
 ADD_EXECUTABLE(zon
+src/game.cpp
+src/resources.cpp
 src/instructionanswerrequest.cpp
 src/instructiongohome.cpp
 src/instructionmove.cpp

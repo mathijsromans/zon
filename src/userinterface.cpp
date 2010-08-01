@@ -11,7 +11,7 @@
 #include "field.h"
 #include "player.h"
 #include "path.h"
-#include "zon.h"
+#include "game.h"
 
 RLE_SPRITE *UserInterface::itempic[N_OF_ITEMS][N_OF_ITPIC], *UserInterface::crpic[N_OF_SPECIES][8 * Serf::N_TYPES],
 *UserInterface::qitempic[N_OF_ITEMS][4],*UserInterface::arrowin,*UserInterface::arrowout,*UserInterface::qhousepic[10][4];
@@ -23,9 +23,9 @@ inline std::string stringify(int x)
   return o.str();
 } 
 
-UserInterface::UserInterface( Player& player, const boost::ptr_vector<Player>& players ) :
-  m_player(player),
-  m_players(players),
+UserInterface::UserInterface() :
+  m_player(0),
+  m_players(0),
   m_sidescreenWidth ( 112 ),
   m_mousemode( VOID ),
   m_togglemode( false ),
@@ -37,52 +37,30 @@ UserInterface::UserInterface( Player& player, const boost::ptr_vector<Player>& p
 {
 }
 
+void UserInterface::setPlayers(Player* player, const boost::ptr_vector<Player>* players)
+{
+  m_player = player;
+  m_players = players;
+}
+
 UserInterface::~UserInterface()
 {
 }
 
 void UserInterface::init()
 {
-  if (allegro_init()) 
-    error("allegro_init failed");
-  install_timer();
-  LOCK_VARIABLE(timer);
-  LOCK_FUNCTION(timecounter);
-  install_keyboard();
-  if (install_mouse()==-1) 
-    error("install_mouse failed");
-  if (set_gfx_mode(GFX_AUTODETECT_WINDOWED,1024,768,0,0))
-    error ("couldn't get graphics mode with resolution:",640,480);
-  loadImages();
-  show_mouse(screen);
-//   if (alert("Welcome to The Clicking Game", "",  "Do you want to", "play &Single-Player", "play &Multi-Player", 's', 'm')==2)
-//     multiplayerinit();
-//   else
-  show_mouse(0);
-}
-
-void UserInterface::setViewOrigin( const Coord& pos )
-{
-  m_viewOrigin = pos;
-}
-
-void UserInterface::loadImages()
-{
-  int x,y;
   BITMAP *bmp,*one_pic, *qone_pic, *big;
   RGB my_palette[256];
   if (!(bmp=load_bmp("resources/map.bmp", my_palette)))
     error ("couldn't find the file 'map.bmp', you idiot!");
-  for (y=0;y<bmp->h;y++)
-    for (x=0;x<bmp->w;x++)
-      field.setItem(Coord(x, y), static_cast<Item>(bmp->line[y][x]));
+
   destroy_bitmap(bmp);
   one_pic=create_bitmap(PICSZ,PICSZ);
   qone_pic=create_bitmap(QPICSZ,QPICSZ);
   if (!(bmp=load_bmp("resources/crpic.bmp", my_palette)))
     error ("couldn't find the file 'crpic.bmp'");
-  for (x=0;x<N_OF_SPECIES;x++)
-    for (y=0;y<8 * Serf::N_TYPES;y++) 
+  for (int x=0;x<N_OF_SPECIES;x++)
+    for (int y=0;y<8 * Serf::N_TYPES;y++) 
   {
     blit(bmp, one_pic, x*PICSZ, y*PICSZ, 0, 0, PICSZ, PICSZ);
     crpic[x][y]=get_rle_sprite(one_pic);
@@ -105,22 +83,22 @@ void UserInterface::loadImages()
     error ("couldn't find the file 'logopic.bmp'");
   blit (bmp, big, 0,0,(LOGO_START+1)*PICSZ,0,(LOGO_END - LOGO_START - 1)*PICSZ,N_OF_ITPIC*PICSZ);
   destroy_bitmap(bmp);  
-  for (x=0;x<N_OF_ITEMS;x++) 
+  for (int x=0;x<N_OF_ITEMS;x++) 
   {
-    for (y=0;y<N_OF_ITPIC;y++) 
+    for (int y=0;y<N_OF_ITPIC;y++) 
     {
       blit(big, one_pic, x*PICSZ, y*PICSZ, 0, 0, PICSZ, PICSZ);
       itempic[x][y]=get_rle_sprite(one_pic);
     }
     blit(big, one_pic, x*PICSZ, PICSZ, 0, 0, PICSZ, PICSZ);
-    for (y=0;y<4;y++) 
+    for (int y=0;y<4;y++) 
     {
       blit(one_pic,qone_pic,QPICSZ*(y%2), QPICSZ*(y/2),0,0,QPICSZ,QPICSZ);
       qitempic[x][y]=get_rle_sprite(qone_pic);
     }
   }
-  for (x=0;x<10;x++)
-    for (y=0;y<4;y++)
+  for (int x=0;x<10;x++)
+    for (int y=0;y<4;y++)
   {
     blit(big, qone_pic, PICSZ*(WALL+x/5)+QPICSZ*(1-((y+1)/2)%2),PICSZ*(1+x%5)+QPICSZ*(1-y/2),0,0,QPICSZ,QPICSZ);
     qhousepic[x][y]=get_rle_sprite(qone_pic);
@@ -134,21 +112,16 @@ void UserInterface::loadImages()
   gui_bg_color=64;
   m_mainscreen=create_bitmap(SCREEN_W-m_sidescreenWidth,SCREEN_H);
   m_sidescreen=create_bitmap(m_sidescreenWidth,SCREEN_H);
-  for (x=0;x<MAPWIDTH;x++)
-  {
-    field.setItem(Coord(x, 0            ), SUPERROCK);
-    field.setItem(Coord(x, MAPHEIGHT - 1), SUPERROCK);
-  }
-  for (y=0;y<MAPHEIGHT;y++) 
-  {
-    field.setItem(Coord(0,            y), SUPERROCK);
-    field.setItem(Coord(MAPWIDTH - 1, y), SUPERROCK);
-  }
+}
+
+void UserInterface::setViewOrigin( const Coord& pos )
+{
+  m_viewOrigin = pos;
 }
 
 void UserInterface::drawSquare(const Coord& c, unsigned int turn) const
 {
-  Item item = field.getItem(c);
+  Item item = Field::current()->getItem(c);
   Coord pix = (c - m_viewOrigin) * PICSZ;
   if (item < WALL)
   {
@@ -170,20 +143,20 @@ void UserInterface::drawSquare(const Coord& c, unsigned int turn) const
     for (int d = 0; d < 8; d += 2)
     {
       int sort;;
-      if (equiv(field.getItem(c.next(d)),DOOR2) && equiv(field.getItem(c.next(d + 1)),DOOR2) && equiv(field.getItem(c.next(d + 2)),DOOR2))
+      if (equiv(Field::current()->getItem(c.next(d)),DOOR2) && equiv(Field::current()->getItem(c.next(d + 1)),DOOR2) && equiv(Field::current()->getItem(c.next(d + 2)),DOOR2))
       {
         sort = 4;
       }
       else
       {
-        sort = 5*(equiv(field.getItem(c.next(d)),FLOOR) || equiv(field.getItem(c.next(d + 1)),FLOOR) || equiv(field.getItem(c.next(d + 2)),FLOOR))+2*(1-equiv(field.getItem(c.next(d + 2)),DOOR2))+(1-equiv(field.getItem(c.next(d)),DOOR2));
+        sort = 5*(equiv(Field::current()->getItem(c.next(d)),FLOOR) || equiv(Field::current()->getItem(c.next(d + 1)),FLOOR) || equiv(Field::current()->getItem(c.next(d + 2)),FLOOR))+2*(1-equiv(Field::current()->getItem(c.next(d + 2)),DOOR2))+(1-equiv(Field::current()->getItem(c.next(d)),DOOR2));
       }
       drawSprite(m_mainscreen, pix.x+QPICSZ*(d==0 || d==6), pix.y+QPICSZ*(d==0 || d==2), SpriteQHouse, sort, d / 2);
     }
   }
   else if (item==DOOR||item==DOOR1||item==DOOR2)
   {
-    drawSprite(m_mainscreen, pix.x, pix.y, SpriteItem, item, (Serf::getSerf(c) != 0 ? 1 : 0)+2*(equiv(field.getItem(c.next(2)),DOOR2)));
+    drawSprite(m_mainscreen, pix.x, pix.y, SpriteItem, item, (Field::current()->getSerf(c) != 0 ? 1 : 0)+2*(equiv(Field::current()->getItem(c.next(2)),DOOR2)));
   }
   else 
   {
@@ -193,7 +166,7 @@ void UserInterface::drawSquare(const Coord& c, unsigned int turn) const
   {
     int d;
     for (d=0;d<8;d++)
-      if (!equiv(field.getItem(c.next(d)),RIVER))
+      if (!equiv(Field::current()->getItem(c.next(d)),RIVER))
         break;
     if (d==8)
     {
@@ -202,7 +175,7 @@ void UserInterface::drawSquare(const Coord& c, unsigned int turn) const
   }
   if (m_togglemode)
   {
-    const Planner& planner = m_player.getPlanner();
+    const Planner& planner = m_player->getPlanner();
 //     if ( planner.hasChangeTarget( c ) )
 //     {
 //       rectfill(m_mainscreen,pix.x+4,pix.y+6,pix.x+10,pix.y+12,13);
@@ -225,7 +198,7 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
   }
   for (Rectangle::Iterator posIt = viewRect.begin(); posIt != viewRect.end(); ++posIt)
   {
-    const Serf *s = Serf::getSerf(*posIt);
+    const Serf *s = Field::current()->getSerf(*posIt);
     if (s)
     {
       s->draw(m_mainscreen,(posIt->x - m_viewOrigin.x)*PICSZ,(posIt->y - m_viewOrigin.y)*PICSZ, tick);
@@ -233,15 +206,14 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
   }
   if (m_togglemode)
   {
-    for ( boost::ptr_vector<Player>::const_iterator pl = m_players.begin(); pl != m_players.end(); ++pl )
+    for ( boost::ptr_vector<Player>::const_iterator pl = m_players->begin(); pl != m_players->end(); ++pl )
     {
-      for (std::vector<Serf*>::const_iterator it = pl->serfBegin(); it != pl->serfEnd(); ++it)
+      for (Player::SerfIter it = pl->serfBegin(); it != pl->serfEnd(); ++it)
       {
-        Serf* s = *it;
-        const Path* path = s->getPath();
+        const Path* path = it->getPath();
         if (path && path->getBoundingBox().intersects(viewRect))
         {
-          unsigned long identity = reinterpret_cast<unsigned long>(s);
+          unsigned long identity = reinterpret_cast<unsigned long>(&*it);
           int offset = identity % 7 - 3;
           RGB rgb = default_palette[ identity % 256];
           const int color = makecol(4 * rgb.r, 4 * rgb.g, 4 * rgb.b);
@@ -259,9 +231,9 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
       }
     }
   }
-  for ( boost::ptr_vector<Player>::const_iterator pl = m_players.begin(); pl != m_players.end(); ++pl )
+  for ( boost::ptr_vector<Player>::const_iterator pl = m_players->begin(); pl != m_players->end(); ++pl )
   {
-    if ( &*pl == &m_player || m_togglemode )
+    if ( &*pl == m_player || m_togglemode )
     {
       const boost::ptr_vector<Area>& areas = pl->getPlanner().getAreaManager().getAreas();
       for (boost::ptr_vector<Area>::const_iterator it = areas.begin(); it != areas.end(); ++it)
@@ -276,16 +248,16 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
   }
   if (m_area)
   {
-    m_area->drawInfo(m_sidescreen, PICSZ, m_player.getNumber());
+    m_area->drawInfo(m_sidescreen, PICSZ, m_player->getNumber());
   }
-  printText(m_sidescreen,3,15,1, ( std::string("Serfs:") + stringify(m_player.nSerf())).c_str() );
+  printText(m_sidescreen,3,15,1, ( std::string("Serfs:") + stringify(m_player->nSerf())).c_str() );
   printText(m_sidescreen,3,25,1, ( std::string("Turn:") + stringify(Global::turn)).c_str() );
   OccArea* occArea = dynamic_cast<OccArea*>( m_area );
   for ( int i = Serf::STONEMASON; i < Serf::N_TYPES; i++)
   {
     if ( !occArea || occArea->getType() != i || !occArea->getOccupant() )
     {
-      drawSprite(m_sidescreen, (m_sidescreenWidth-3*PICSZ)/2+PICSZ*((i-2)%3),SCREEN_H-140+((i-2)/3)*PICSZ, SpriteCr, 10+11*(m_player.getNumber()%3), 8*i);
+      drawSprite(m_sidescreen, (m_sidescreenWidth-3*PICSZ)/2+PICSZ*((i-2)%3),SCREEN_H-140+((i-2)/3)*PICSZ, SpriteCr, 10+11*(m_player->getNumber()%3), 8*i);
 //       draw_rle_sprite(m_sidescreen,crpic[10+11*(me.getNumber()%3)][8*i],(m_sidescreenWidth-3*PICSZ)/2+PICSZ*((i-2)%3),SCREEN_H-140+((i-2)/3)*PICSZ);
     }
   }
@@ -294,7 +266,7 @@ void UserInterface::drawScreen( unsigned int turn, int tick ) const
     rect(m_sidescreen,(m_sidescreenWidth-3*PICSZ)/2+PICSZ*((occArea->getType()-2)%3)-1,SCREEN_H-140+((occArea->getType()-2)/3)*PICSZ-1,(m_sidescreenWidth-3*PICSZ)/2+PICSZ*((occArea->getType()-2)%3)+PICSZ,SCREEN_H-140+((occArea->getType()-2)/3)*PICSZ+PICSZ,5);
     if (occArea->getOccupant())
     {
-      drawSprite(m_sidescreen, (m_sidescreenWidth-3*PICSZ)/2+PICSZ*((occArea->getType()-2)%3),SCREEN_H-140+((occArea->getType()-2)/3)*PICSZ, SpriteCr,10+11*(m_player.getNumber()%3), ((tick+16*turn)/8&7)+8*occArea->getType());
+      drawSprite(m_sidescreen, (m_sidescreenWidth-3*PICSZ)/2+PICSZ*((occArea->getType()-2)%3),SCREEN_H-140+((occArea->getType()-2)/3)*PICSZ, SpriteCr,10+11*(m_player->getNumber()%3), ((tick+16*turn)/8&7)+8*occArea->getType());
   //       draw_rle_sprite(m_sidescreen,crpic[10+11*(me.getNumber()%3)][((tick+16*turn)/8&7)+8*m_area->getType()],(m_sidescreenWidth-3*PICSZ)/2+PICSZ*((m_area->getType()-2)%3),SCREEN_H-140+((m_area->getType()-2)/3)*PICSZ);
     }
   }
@@ -379,11 +351,11 @@ void UserInterface::setViewPort()
   {
     m_rmbPressed = false;
   }
-  m_viewOrigin = Rectangle( 0, 0, MAPWIDTH-(SCREEN_W-m_sidescreenWidth)/PICSZ + 1, MAPHEIGHT-SCREEN_H/PICSZ + 1).project( m_viewOrigin );
+  m_viewOrigin = Rectangle( 0, 0, Field::current()->getWidth()-(SCREEN_W-m_sidescreenWidth)/PICSZ + 1, Field::current()->getHeight()-SCREEN_H/PICSZ + 1).project( m_viewOrigin );
   m_mousePos = relMousePos + m_viewOrigin;
 }
 
-void UserInterface::userInput( Zon* theZon )
+void UserInterface::userInput( Game* game )
 {
   if (m_keypressedwhen && m_keywaitforrelease && Global::timer > m_keypressedwhen + 10)
   {
@@ -400,9 +372,9 @@ void UserInterface::userInput( Zon* theZon )
         alert("Do you mean","discontinue quitting","or discontinue playing?","Ok", "Cancel",'o', 'c');
       alert("Sorry","but I don't understand you", "Try again later","Ok", "Cancel",'o', 'c');
     }
-    if (key[KEY_PLUS_PAD]) theZon->speedUp();
-    if (key[KEY_MINUS_PAD]) theZon->speedDown();
-    if (key[KEY_ESC]) theZon->quit();
+    if (key[KEY_PLUS_PAD]) game->speedUp();
+    if (key[KEY_MINUS_PAD]) game->speedDown();
+    if (key[KEY_ESC]) game->quit();
     if (key[KEY_T]) m_togglemode = !m_togglemode;
   }
   m_keywaitforrelease=key[KEY_Q]||key[KEY_PLUS_PAD]||key[KEY_MINUS_PAD]||key[KEY_T];
@@ -410,7 +382,7 @@ void UserInterface::userInput( Zon* theZon )
   if (key[KEY_DEL] && m_area)
   {
     
-    m_player.getPlanner().getAreaManager().removeArea( m_area );
+    m_player->getPlanner().getAreaManager().removeArea( m_area );
     m_area = 0;
   }
 
@@ -435,21 +407,21 @@ void UserInterface::userInput( Zon* theZon )
     {
       if (m_mousemode != VOID)
       {
-        if ((Item) m_mousemode > BUILD_START && equiv(field.getItem(m_mousePos),VOID))
+        if ((Item) m_mousemode > BUILD_START && equiv(Field::current()->getItem(m_mousePos),VOID))
         {
-          field.setItem(m_mousePos, m_mousemode);
-          m_player.getPlanner().newBuilding(m_mousePos);
+          Field::current()->setItem(m_mousePos, m_mousemode);
+          m_player->getPlanner().newBuilding(m_mousePos);
         }
-        else if ((Item) m_mousemode == BUILD_START && field.getItem(m_mousePos) > BUILD_START && field.getItem(m_mousePos) < BUILD_END)
+        else if ((Item) m_mousemode == BUILD_START && Field::current()->getItem(m_mousePos) > BUILD_START && Field::current()->getItem(m_mousePos) < BUILD_END)
         {
-          field.setItem(m_mousePos, VOID);
-          m_player.getPlanner().getAreaManager().removeBuildAreas(m_mousePos);
+          Field::current()->setItem(m_mousePos, VOID);
+          m_player->getPlanner().getAreaManager().removeBuildAreas(m_mousePos);
         }
       }
       else
       {
         m_area=0;
-        boost::ptr_vector<Area>& areas = m_player.getPlanner().getAreaManager().getAreas();
+        boost::ptr_vector<Area>& areas = m_player->getPlanner().getAreaManager().getAreas();
         for (boost::ptr_vector<Area>::iterator area = areas.begin(); area != areas.end(); ++area)
         {
           m_areamode = area->areaClick(m_mousePos);
@@ -462,8 +434,8 @@ void UserInterface::userInput( Zon* theZon )
         }
         if (!m_area)
         {
-          m_area = new Area( m_player.getPlanner(), m_mousePos, Serf::SERF );
-          m_player.getPlanner().getAreaManager().addNewArea( m_area );
+          m_area = new Area( m_player->getPlanner(), m_mousePos, Serf::SERF );
+          m_player->getPlanner().getAreaManager().addNewArea( m_area );
           m_fixCorner = m_area->getTopLeft();
           m_areamode=Area::RESIZE;
         }
@@ -495,13 +467,13 @@ void UserInterface::userInput( Zon* theZon )
           m_mousemode = VOID;
           if ( pushed == Serf::TEACHER )
           {
-            m_area = new ProduceArea( m_player.getPlanner(), m_viewOrigin, pushed );
+            m_area = new ProduceArea( m_player->getPlanner(), m_viewOrigin, pushed );
           }
           else
           {
-            m_area = new OccArea( m_player.getPlanner(), m_viewOrigin, pushed );
+            m_area = new OccArea( m_player->getPlanner(), m_viewOrigin, pushed );
           }
-          m_player.getPlanner().getAreaManager().addNewArea( m_area );
+          m_player->getPlanner().getAreaManager().addNewArea( m_area );
           m_area->resize(3, 3);
           m_fixCorner = m_viewOrigin;
           m_areamode = Area::FLOAT;
@@ -525,11 +497,11 @@ void UserInterface::userInput( Zon* theZon )
 
 bool UserInterface::squareof(const Coord& c, Item item1) const
 {
-  if (field.getItem(c)==RIVER || field.getItem(c)==FORD1 || field.getItem(c)==FORD2 || field.getItem(c)==SHIP)
+  if (Field::current()->getItem(c)==RIVER || Field::current()->getItem(c)==FORD1 || Field::current()->getItem(c)==FORD2 || Field::current()->getItem(c)==SHIP)
   {
-    return equiv(field.getItem(c),RIVER)&&equiv(field.getItem(Coord(c.x + 1, c.y)),RIVER)&&equiv(field.getItem(Coord(c.x, c.y + 1)),RIVER)&&equiv(field.getItem(Coord(c.x + 1, c.y + 1)),RIVER);
+    return equiv(Field::current()->getItem(c),RIVER)&&equiv(Field::current()->getItem(Coord(c.x + 1, c.y)),RIVER)&&equiv(Field::current()->getItem(Coord(c.x, c.y + 1)),RIVER)&&equiv(Field::current()->getItem(Coord(c.x + 1, c.y + 1)),RIVER);
   }
-  return field.getItem(c)==item1&&field.getItem(Coord(c.x + 1, c.y))==item1&&field.getItem(Coord(c.x, c.y + 1))==item1&&field.getItem(Coord(c.x + 1, c.y + 1))==item1;
+  return Field::current()->getItem(c)==item1&&Field::current()->getItem(Coord(c.x + 1, c.y))==item1&&Field::current()->getItem(Coord(c.x, c.y + 1))==item1&&Field::current()->getItem(Coord(c.x + 1, c.y + 1))==item1;
 }
 
 void UserInterface::error(const char* code,int var1, int var2, int var3, int var4)
@@ -545,7 +517,8 @@ void UserInterface::error(const char* code,int var1, int var2, int var3, int var
     allegro_message("\nDamn! An error has occurred:\n%s\n%i %i %i\n",code,var1,var2,var3);
   else
     allegro_message("\nDamn! An error has occurred:\n%s\n%i %i %i %i\n",code,var1,var2,var3,var4);
-  zon.quit();
+  allegro_exit();
+  exit(1);
 }
 
 void UserInterface::drawSprite(BITMAP *bmp, int x, int y, SpriteSet set, int sort, int n)
@@ -585,10 +558,15 @@ void UserInterface::printText(BITMAP *bmp, int x, int y, int color, const char *
   textout_ex(bmp, font, s, x, y, color, 68); 
 }
 
-void UserInterface::victory( Player& player )
+void UserInterface::message( const std::string& msg )
+{
+  alert(msg.c_str(), "", "", "Ok", 0, 'o', 0);
+}
+
+void UserInterface::victory( const Player* player )
 {
   std::string msg;
-  if ( &player == &m_player )
+  if ( player == m_player )
   {
     msg = "Congratulations, you have won the game in turn ";
   }
@@ -596,6 +574,6 @@ void UserInterface::victory( Player& player )
   {
     msg = "Too bad, you have lost the game in turn ";
   }
-  msg += stringify( Global::turn) + "!";
-  alert(msg.c_str(), "", "", "Ok", 0, 'o', 0);
+  msg += stringify(Global::turn) + "!";
+  message(msg);
 }

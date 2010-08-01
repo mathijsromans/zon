@@ -10,7 +10,7 @@ class Path;
 class PathFinder
 {
   public:
-    PathFinder(const Field& field) : m_field(field) {}
+    PathFinder(const Field& field);
 
     /**
      * Find shortest route from start to end
@@ -30,8 +30,8 @@ class PathFinder
      * @param end resulting end
      * @return path resulting path
      */
-    Path findPath( const Coord& start, Item item, const CoordSet<MAPWIDTH, MAPHEIGHT>& doNotUse, Coord* end );
-    Path findPath( const Coord& start, const std::vector<Item>& items, const CoordSet<MAPWIDTH, MAPHEIGHT>& doNotUse, Coord* end );
+    Path findPath( const Coord& start, Item item, const CoordSet& doNotUse, Coord* end );
+    Path findPath( const Coord& start, const std::vector<Item>& items, const CoordSet& doNotUse, Coord* end );
 
   private:
     template<typename Heuristic, typename EndCondition> bool makeMap( const Coord& start, Heuristic heur, EndCondition endCondition, Coord* end );
@@ -47,7 +47,7 @@ class PathFinder
     FieldMap<unsigned int> g_score; // the actual shortest distance traveled from initial node to current node
     FieldMap<unsigned int> h_score; // the estimated (or "heuristic") distance from current node to goal
     const Field& m_field;
-    CoordSet<MAPWIDTH, MAPHEIGHT> m_openSet, m_closedSet;
+    CoordSet m_openSet, m_closedSet;
 };
 
 #endif

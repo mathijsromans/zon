@@ -20,7 +20,7 @@ Path InstructionAnswerRequest::finalize( Task& task, Planner& planner, const Coo
 {
   Planner::Request request = { serfType, carryBefore, task.getEnd() };
   planner.takeRequest( request );
-  return field.getPathFinder().findPath( start, task.getEnd() );
+  return Field::current()->getPathFinder().findPath( start, task.getEnd() );
 }
 
 std::auto_ptr<boost::ptr_vector<Task> > InstructionAnswerRequest::makeMyTasks( Planner& planner, const OccArea* /*occupies*/, const Coord& start ) const

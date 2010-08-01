@@ -2,10 +2,17 @@
 #include "pathfinder.h"
 #include <cassert>
 
-Field field;
+// Field field( 256, 256);
 
-Field::Field()
-  : m_pathFinder(*this)
+std::auto_ptr<Field> Field::s_current;
+
+Field::Field( unsigned int width, unsigned int height )
+  : m_width(width),
+    m_height(height),
+    m_walkOn(width, height),
+    m_items(width, height),
+    m_serfs(width, height),
+    m_pathFinder(*this)
 {
   m_t2pass.resize(N_OF_ITEMS, 2);
   m_t2pass[RIVER]=0;

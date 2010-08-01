@@ -51,10 +51,6 @@ void UserInterface::init()
 {
   BITMAP *bmp,*one_pic, *qone_pic, *big;
   RGB my_palette[256];
-  if (!(bmp=load_bmp("resources/map.bmp", my_palette)))
-    error ("couldn't find the file 'map.bmp', you idiot!");
-
-  destroy_bitmap(bmp);
   one_pic=create_bitmap(PICSZ,PICSZ);
   qone_pic=create_bitmap(QPICSZ,QPICSZ);
   if (!(bmp=load_bmp("resources/crpic.bmp", my_palette)))
